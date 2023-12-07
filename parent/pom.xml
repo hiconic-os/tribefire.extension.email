@@ -27,7 +27,7 @@ You should have received a copy of the GNU Lesser General Public License along w
         <V.org.antlr>4.5</V.org.antlr>
         <V.org.jsoup>1.14.3</V.org.jsoup>
         <V.org.simplejavamail>6.5.2</V.org.simplejavamail>
-        <V.javax.servlet>3.0.1</V.javax.servlet>
+        <V.javax.servlet>3.1.0</V.javax.servlet>
     </properties>
     <licenses>
         <license>
