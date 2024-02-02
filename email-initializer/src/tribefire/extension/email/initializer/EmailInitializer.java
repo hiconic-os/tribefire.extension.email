@@ -19,7 +19,7 @@ import com.braintribe.gm.model.reason.essential.NotFound;
 import com.braintribe.model.ddra.DdraMapping;
 import com.braintribe.model.email.service.EmailServiceRequest;
 import com.braintribe.model.email.service.reason.ConfigurationMissing;
-import com.braintribe.model.processing.meta.editor.BasicModelMetaDataEditor;
+import com.braintribe.model.processing.meta.editor.ModelMetaDataEditor;
 import com.braintribe.model.processing.session.api.collaboration.PersistenceInitializationContext;
 import com.braintribe.wire.api.module.WireTerminalModule;
 
@@ -60,7 +60,8 @@ public class EmailInitializer extends AbstractInitializer<EmailInitializerMainCo
 	private void configureMetaData(EmailInitializerMainContract initializerMainContract) {
 		EmailInitializerContract initializer = initializerMainContract.initializer();
 
-		BasicModelMetaDataEditor editor = new BasicModelMetaDataEditor(initializerMainContract.models().configuredEmailApiModel());
+		ModelMetaDataEditor editor = initializerMainContract.tfPlatform().modelApi()
+				.newMetaDataEditor(initializerMainContract.models().configuredEmailApiModel()).done();
 		editor.onEntityType(EmailServiceRequest.T).addMetaData(initializerMainContract.initializer().processWithEmailServiceProcessor());
 
 		editor.onEntityType(CommunicationError.T).addMetaData(initializer.httpStatus502Md(), initializer.logReasonTrace());

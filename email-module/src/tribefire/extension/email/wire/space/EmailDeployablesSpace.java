@@ -11,12 +11,6 @@
 // ============================================================================
 package tribefire.extension.email.wire.space;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
-import com.braintribe.execution.ThreadPoolBuilder;
-import com.braintribe.execution.queue.LimitedQueue;
 import com.braintribe.model.processing.deployment.api.ExpertContext;
 import com.braintribe.model.processing.email.EmailProcessor;
 import com.braintribe.model.processing.email.HealthCheckProcessor;
@@ -108,7 +102,6 @@ public class EmailDeployablesSpace implements WireSpace {
 		bean.setModuleClassLoader(reflection.moduleClassLoader());
 		bean.setMailerCache(mailerCache());
 		bean.setPipeStreamFactory(resourceProcessing.streamPipeFactory());
-		bean.setHealthCheckExecutor(healthCheckExecutor());
 
 		return bean;
 	}
@@ -123,22 +116,6 @@ public class EmailDeployablesSpace implements WireSpace {
 
 		return bean;
 
-	}
-
-	@Managed
-	private ExecutorService healthCheckExecutor() {
-		int workerThreads = 5;
-		//@formatter:off
-		return ThreadPoolBuilder.newPool()
-				.poolSize(workerThreads, workerThreads)
-				.keepAliveTime(60L, TimeUnit.SECONDS)
-				.workQueue(new LimitedQueue<>(1))
-				.rejectionHandler(new ThreadPoolExecutor.CallerRunsPolicy()) 
-				.waitForTasksToCompleteOnShutdown(true)
-				.threadNamePrefix("EmailConnectionCheck")
-				.description("Email Check Executor") 
-				.build();
-		//@formatter:on
 	}
 
 	@Managed

@@ -13,17 +13,17 @@ package com.braintribe.model.processing.email.util;
 
 import java.util.Properties;
 
-import javax.mail.Authenticator;
-import javax.mail.Folder;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.PasswordAuthentication;
-import javax.mail.Session;
-import javax.mail.Store;
-import javax.mail.search.SearchTerm;
-
 import com.braintribe.model.email.deployment.connection.Pop3Connector;
 import com.braintribe.model.email.deployment.connection.RetrieveConnector;
+
+import jakarta.mail.Authenticator;
+import jakarta.mail.Folder;
+import jakarta.mail.Message;
+import jakarta.mail.MessagingException;
+import jakarta.mail.PasswordAuthentication;
+import jakarta.mail.Session;
+import jakarta.mail.Store;
+import jakarta.mail.search.SearchTerm;
 
 public class MailboxContext {
 

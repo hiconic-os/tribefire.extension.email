@@ -14,6 +14,7 @@ package tribefire.extension.email.initializer.wire.contract;
 import com.braintribe.wire.api.space.WireSpace;
 
 import tribefire.cortex.initializer.support.integrity.wire.contract.CoreInstancesContract;
+import tribefire.module.wire.contract.TribefirePlatformContract;
 
 public interface EmailInitializerMainContract extends WireSpace {
 
@@ -25,4 +26,5 @@ public interface EmailInitializerMainContract extends WireSpace {
 
 	EmailInitializerModelsContract models();
 
+	TribefirePlatformContract tfPlatform();
 }

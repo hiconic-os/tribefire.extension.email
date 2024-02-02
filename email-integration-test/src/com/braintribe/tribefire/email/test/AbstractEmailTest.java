@@ -22,6 +22,7 @@ import org.junit.Before;
 import com.braintribe.model.deployment.Deployable;
 import com.braintribe.model.deploymentapi.request.Deploy;
 import com.braintribe.model.deploymentapi.request.Redeploy;
+import com.braintribe.model.deploymentapi.request.Undeploy;
 import com.braintribe.model.email.data.Recipient;
 import com.braintribe.model.processing.email.util.EmailConstants;
 import com.braintribe.model.processing.email.util.QueryingUtil;
@@ -73,6 +74,7 @@ public abstract class AbstractEmailTest extends AbstractTribefireQaTest implemen
 	public static final String HTML_EMAIL_TEMPLATE_RESOURCE_PATH = "res/template1.vm";
 
 	protected static final String TEST_EXTERNAL_ID_SMTP_CONNECTION_GMAIL_GMAIL = "test.email.gmail.smtp.connection.gmail";
+	protected static final String TEST_EXTERNAL_ID_SMTP_CONNECTION_GMAIL_GMAIL_ASYNC = "test.email.gmail.smtp.connection.gmail.async";
 	protected static final String TEST_EXTERNAL_ID_IMAP_CONNECTION_GMAIL_GMAIL = "test.email.gmail.imap.connection.gmail";
 	protected static final String TEST_EXTERNAL_ID_POP3_CONNECTION_GMAIL_GMAIL = "test.email.gmail.pop3.connection.gmail";
 
@@ -122,6 +124,15 @@ public abstract class AbstractEmailTest extends AbstractTribefireQaTest implemen
 		cortexSession.commit();
 
 		Deploy deploy = Deploy.T.create();
+		deploy.setExternalIds(asSet(deployable.getExternalId()));
+
+		deploy.eval(cortexSession).get();
+	}
+
+	protected void undeployDeployable(Deployable deployable) {
+		cortexSession.commit();
+
+		Undeploy deploy = Undeploy.T.create();
 		deploy.setExternalIds(asSet(deployable.getExternalId()));
 
 		deploy.eval(cortexSession).get();

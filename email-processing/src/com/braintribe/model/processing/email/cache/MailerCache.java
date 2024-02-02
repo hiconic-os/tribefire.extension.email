@@ -11,18 +11,24 @@
 // ============================================================================
 package com.braintribe.model.processing.email.cache;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
 
 import org.simplejavamail.api.mailer.Mailer;
 import org.simplejavamail.api.mailer.config.TransportStrategy;
 import org.simplejavamail.mailer.MailerBuilder;
 import org.simplejavamail.mailer.internal.MailerRegularBuilderImpl;
 
+import com.braintribe.cfg.DestructionAware;
+import com.braintribe.execution.virtual.VirtualThreadExecutor;
+import com.braintribe.execution.virtual.VirtualThreadExecutorBuilder;
 import com.braintribe.logging.Logger;
 import com.braintribe.model.email.deployment.connection.SmtpConnector;
 import com.braintribe.utils.lcd.StringTools;
 
-public class MailerCache {
+public class MailerCache implements DestructionAware {
 
 	private static final Logger logger = Logger.getLogger(MailerCache.class);
 
@@ -54,7 +60,7 @@ public class MailerCache {
 				mailerBuilder.withSessionTimeout(connectionTimeoutInMs);
 			}
 
-			setPoolSizes(smtpConnector, mailerBuilder);
+			ExecutorService executor = setPoolSizes(smtpConnector, mailerBuilder);
 
 			com.braintribe.model.email.deployment.connection.TransportStrategy transportStrategy = smtpConnector.getTransportStrategy();
 			if (transportStrategy != null) {
@@ -66,17 +72,24 @@ public class MailerCache {
 
 			MailerContext context = new MailerContext(newMailer);
 			context.setSendAsync(smtpConnector.getSendAsync());
+			context.setExecutor(executor);
 
 			return context;
 		});
 		return mailerContext;
 	}
 
-	private void setPoolSizes(SmtpConnector smtpConnector, MailerRegularBuilderImpl mailerBuilder) {
+	private ExecutorService setPoolSizes(SmtpConnector smtpConnector, MailerRegularBuilderImpl mailerBuilder) {
 		Integer threadPoolSize = smtpConnector.getThreadPoolSize();
 		if (threadPoolSize != null && threadPoolSize > 0) {
 			mailerBuilder.withThreadPoolSize(threadPoolSize);
 		}
+		if (threadPoolSize == null || threadPoolSize <= 0) {
+			threadPoolSize = 10;
+		}
+		VirtualThreadExecutor executor = VirtualThreadExecutorBuilder.newPool().concurrency(threadPoolSize).description("Mail-Sender")
+				.threadNamePrefix("send-mail-").waitForTasksToCompleteOnShutdown(true).build();
+		mailerBuilder.withExecutorService(executor);
 
 		Integer connectionPoolCoreSize = smtpConnector.getConnectionPoolCoreSize();
 		if (connectionPoolCoreSize != null && connectionPoolCoreSize >= 0) {
@@ -87,6 +100,8 @@ public class MailerCache {
 		if (connectionPoolMaxSize != null && connectionPoolMaxSize > 0) {
 			mailerBuilder.withConnectionPoolMaxSize(connectionPoolMaxSize);
 		}
+
+		return executor;
 	}
 
 	private void setProxy(SmtpConnector smtpConnector, MailerRegularBuilderImpl mailerBuilder) {
@@ -108,10 +123,26 @@ public class MailerCache {
 		MailerContext mailerContext = mailers.remove(externalId);
 		if (mailerContext != null) {
 			try {
+				mailerContext.close();
 				mailerContext.getMailer().shutdownConnectionPool();
 			} catch (Exception e) {
 				logger.warn("Could not shutdown the connection pool of Mailer for " + externalId, e);
 			}
 		}
 	}
+
+	@Override
+	public void preDestroy() {
+		List<MailerContext> list = new ArrayList<>(mailers.values());
+		list.forEach(m -> {
+			try {
+				m.close();
+				m.getMailer().shutdownConnectionPool();
+			} catch (Exception e) {
+				logger.error("Error while trying to close MailerContext: " + m, e);
+			}
+		});
+		mailers.clear();
+	}
+
 }

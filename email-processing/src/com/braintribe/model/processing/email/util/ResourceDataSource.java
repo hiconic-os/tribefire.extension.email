@@ -16,14 +16,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import javax.activation.DataSource;
-
 import com.braintribe.common.lcd.NotSupportedException;
 import com.braintribe.exception.Exceptions;
 import com.braintribe.model.resource.Resource;
 import com.braintribe.utils.IOTools;
 import com.braintribe.utils.stream.api.StreamPipe;
 import com.braintribe.utils.stream.api.StreamPipeFactory;
+
+import jakarta.activation.DataSource;
 
 public class ResourceDataSource implements DataSource {
 

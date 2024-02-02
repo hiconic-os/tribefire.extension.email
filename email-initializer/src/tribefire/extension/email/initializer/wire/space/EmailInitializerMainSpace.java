@@ -19,6 +19,7 @@ import tribefire.extension.email.initializer.wire.contract.EmailInitializerContr
 import tribefire.extension.email.initializer.wire.contract.EmailInitializerMainContract;
 import tribefire.extension.email.initializer.wire.contract.EmailInitializerModelsContract;
 import tribefire.extension.email.initializer.wire.contract.ExistingInstancesContract;
+import tribefire.module.wire.contract.TribefirePlatformContract;
 
 @Managed
 public class EmailInitializerMainSpace implements EmailInitializerMainContract {
@@ -34,6 +35,9 @@ public class EmailInitializerMainSpace implements EmailInitializerMainContract {
 
 	@Import
 	private EmailInitializerModelsContract models;
+
+	@Import
+	private TribefirePlatformContract tfPlatform;
 
 	@Override
 	public EmailInitializerContract initializer() {
@@ -53,6 +57,11 @@ public class EmailInitializerMainSpace implements EmailInitializerMainContract {
 	@Override
 	public EmailInitializerModelsContract models() {
 		return models;
+	}
+
+	@Override
+	public TribefirePlatformContract tfPlatform() {
+		return tfPlatform;
 	}
 
 }

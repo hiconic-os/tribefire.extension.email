@@ -21,31 +21,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import javax.mail.Address;
-import javax.mail.BodyPart;
-import javax.mail.Flags;
-import javax.mail.Folder;
-import javax.mail.Message;
-import javax.mail.Message.RecipientType;
-import javax.mail.MessagingException;
-import javax.mail.Multipart;
-import javax.mail.Part;
-import javax.mail.internet.ContentType;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
-import javax.mail.search.AndTerm;
-import javax.mail.search.FlagTerm;
-import javax.mail.search.MessageIDTerm;
-import javax.mail.search.SearchTerm;
-
 import org.simplejavamail.api.email.EmailPopulatingBuilder;
-import org.simplejavamail.api.mailer.AsyncResponse;
 import org.simplejavamail.api.mailer.Mailer;
 import org.simplejavamail.email.EmailBuilder;
 
@@ -123,8 +105,24 @@ import com.braintribe.utils.stream.CountingOutputStream;
 import com.braintribe.utils.stream.api.StreamPipe;
 import com.braintribe.utils.stream.api.StreamPipeFactory;
 import com.braintribe.utils.stream.api.StreamPipes;
-import com.sun.mail.imap.IMAPFolder; //NOSONAR: this is legit as it is part of the JavaMail API
-import com.sun.mail.imap.IMAPMessage; //NOSONAR: this is legit as it is part of the JavaMail API
+
+import jakarta.mail.Address;
+import jakarta.mail.BodyPart;
+import jakarta.mail.Flags;
+import jakarta.mail.Folder;
+import jakarta.mail.Message;
+import jakarta.mail.Message.RecipientType;
+import jakarta.mail.MessagingException;
+import jakarta.mail.Multipart;
+import jakarta.mail.Part;
+import jakarta.mail.internet.ContentType;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.internet.MimeMultipart;
+import jakarta.mail.search.AndTerm;
+import jakarta.mail.search.FlagTerm;
+import jakarta.mail.search.MessageIDTerm;
+import jakarta.mail.search.SearchTerm;
 
 public class EmailProcessor implements ServiceProcessor<EmailServiceRequest, EmailServiceResult> {
 
@@ -136,7 +134,6 @@ public class EmailProcessor implements ServiceProcessor<EmailServiceRequest, Ema
 	private MailerCache mailerCache;
 
 	protected StreamPipeFactory pipeStreamFactory;
-	private ExecutorService healthCheckExecutor;
 
 	private static FlagTerm unreadFlagTerm = new FlagTerm(new Flags(Flags.Flag.SEEN), false);
 
@@ -182,16 +179,20 @@ public class EmailProcessor implements ServiceProcessor<EmailServiceRequest, Ema
 
 			List<Future<ConnectionCheckResultEntry>> futures = new ArrayList<>();
 
-			sendConnectors.forEach(c -> futures.add(healthCheckExecutor.submit(() -> checkSendConnector(c))));
-			retrieveConnectors.forEach(c -> futures.add(healthCheckExecutor.submit(() -> checkRetrieveConnector(c))));
+			try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
 
-			for (Future<ConnectionCheckResultEntry> f : futures) {
-				try {
-					ConnectionCheckResultEntry entry = f.get();
-					result.getEntries().add(entry);
-				} catch (Exception e) {
-					logger.error("Error while waiting for check result.", e);
+				sendConnectors.forEach(c -> futures.add(executor.submit(() -> checkSendConnector(c))));
+				retrieveConnectors.forEach(c -> futures.add(executor.submit(() -> checkRetrieveConnector(c))));
+
+				for (Future<ConnectionCheckResultEntry> f : futures) {
+					try {
+						ConnectionCheckResultEntry entry = f.get();
+						result.getEntries().add(entry);
+					} catch (Exception e) {
+						logger.error("Error while waiting for check result.", e);
+					}
 				}
+
 			}
 
 			return Maybe.complete(result);
@@ -402,16 +403,13 @@ public class EmailProcessor implements ServiceProcessor<EmailServiceRequest, Ema
 				response.setEmailFound(true);
 				try {
 					Folder folder = mailboxContext.getFolder();
-					if (folder instanceof IMAPFolder) {
-						IMAPFolder imapFolder = (IMAPFolder) folder;
+					Folder targetFolder = mailboxContext.getFolder(request.getTargetFolder(), true);
 
-						Folder targetFolder = mailboxContext.getFolder(request.getTargetFolder(), true);
+					folder.copyMessages(messages, targetFolder);
+					folder.setFlags(messages, new Flags(Flags.Flag.DELETED), true);
+					targetFolder.close(true);
 
-						imapFolder.moveMessages(messages, targetFolder);
-						response.setEmailMoved(true);
-					} else {
-						response.setEmailMoved(false);
-					}
+					response.setEmailMoved(true);
 				} catch (Exception e) {
 					return exceptionToReason(MoveMailFailed.T, e,
 							"Failed to move email with Id " + request.getEmailId() + " to folder " + request.getTargetFolder());
@@ -507,15 +505,19 @@ public class EmailProcessor implements ServiceProcessor<EmailServiceRequest, Ema
 
 	private String sendEmail(final org.simplejavamail.api.email.Email email, SmtpConnector connection) {
 
+		Thread currentThread = Thread.currentThread();
+		ClassLoader oldClassloader = currentThread.getContextClassLoader();
+		currentThread.setContextClassLoader(moduleClassLoader);
 		try {
 			MailerContext mailerContext = mailerCache.getMailer(connection);
 
 			if (mailerContext.getSendAsync()) {
-				AsyncResponse asyncResponse = mailerContext.getMailer().sendMail(email, true);
-				asyncResponse.onException(e -> {
+				CompletableFuture<Void> sendMailFuture = mailerContext.getMailer().sendMail(email, true);
+				sendMailFuture.exceptionally(e -> {
 					logger.error("Error while trying to send email " + email + " asynchronously.", e);
+					return null;
 				});
-				asyncResponse.onSuccess(() -> {
+				sendMailFuture.thenRun(() -> {
 					logger.debug(() -> "Successfully sent email " + email.getRecipients());
 				});
 			} else {
@@ -526,6 +528,8 @@ public class EmailProcessor implements ServiceProcessor<EmailServiceRequest, Ema
 
 		} catch (Exception e) {
 			throw Exceptions.unchecked(e, "Could not send message via connection " + connection.getExternalId());
+		} finally {
+			currentThread.setContextClassLoader(oldClassloader);
 		}
 
 	}
@@ -645,18 +649,14 @@ public class EmailProcessor implements ServiceProcessor<EmailServiceRequest, Ema
 
 	private ReceivedEmail processMessage(Message msg) throws MessagingException, IOException {
 		final ReceivedEmail email;
-		if (msg instanceof IMAPMessage) {
-			ReceivedImapEmail imapMessage = ReceivedImapEmail.T.create();
-			email = imapMessage;
 
-			IMAPMessage imapMsg = (IMAPMessage) msg;
-			Folder folder = imapMsg.getFolder();
-			if (folder != null) {
-				imapMessage.setImapFolder(folder.getFullName());
-			}
-		} else {
-			email = ReceivedEmail.T.create();
+		ReceivedImapEmail imapMessage = ReceivedImapEmail.T.create();
+		email = imapMessage;
+		Folder folder = msg.getFolder();
+		if (folder != null) {
+			imapMessage.setImapFolder(folder.getFullName());
 		}
+
 		if (msg instanceof MimeMessage) {
 			MimeMessage mimeMessage = (MimeMessage) msg;
 			email.setId(mimeMessage.getMessageID());
@@ -990,11 +990,6 @@ public class EmailProcessor implements ServiceProcessor<EmailServiceRequest, Ema
 	@Configurable
 	public void setPipeStreamFactory(StreamPipeFactory pipeStreamFactory) {
 		this.pipeStreamFactory = pipeStreamFactory;
-	}
-	@Configurable
-	@Required
-	public void setHealthCheckExecutor(ExecutorService healthCheckExecutor) {
-		this.healthCheckExecutor = healthCheckExecutor;
 	}
 
 }

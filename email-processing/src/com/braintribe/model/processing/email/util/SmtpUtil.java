@@ -15,14 +15,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
 
-import javax.mail.Message.RecipientType;
-
 import org.simplejavamail.api.email.EmailPopulatingBuilder;
 import org.simplejavamail.api.email.Recipient;
 
 import com.braintribe.model.email.data.Sender;
 import com.braintribe.model.email.deployment.connection.SmtpConnector;
 import com.braintribe.utils.StringTools;
+
+import jakarta.mail.Message.RecipientType;
 
 /**
  * Utility class for setting addresses

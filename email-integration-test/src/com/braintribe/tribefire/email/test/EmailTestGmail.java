@@ -17,6 +17,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -26,6 +27,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.braintribe.common.lcd.Numbers;
 import com.braintribe.model.email.data.Email;
 import com.braintribe.model.email.data.ReceivedEmail;
 import com.braintribe.model.email.data.Recipient;
@@ -62,13 +64,17 @@ public class EmailTestGmail extends AbstractEmailTest {
 	// SETUP & TEARDOWN
 	// -----------------------------------------------------------------------
 
+	private GmailSmtpConnector asyncSmtp;
+	private GmailSmtpConnector syncSmtp;
+
 	@Override
 	@Before
 	public void before() throws Exception {
 		super.before();
 		if (!initialized) {
 			initialized = true;
-			connectorGmailSmtp();
+			syncSmtp = connectorGmailSmtp();
+			asyncSmtp = connectorGmailSmtpAsync();
 			connectorGmailImap();
 			// Works as with Imap, except for testSendAndReceiveTwice
 			// connectorGmailPop3();
@@ -596,6 +602,7 @@ public class EmailTestGmail extends AbstractEmailTest {
 		System.out.println("testSendAndReceiveTextWithMultipleTextAttachments: Sending email: " + sentEmail.getDurationInMs()
 				+ " ms, receiving email: " + receivedEmails.getDurationInMs() + " ms");
 	}
+
 	@Test
 	public void testSendAndReceiveTextWithUnicodeAttachment() throws Exception {
 
@@ -818,6 +825,34 @@ public class EmailTestGmail extends AbstractEmailTest {
 		return emailGmailSmtpConnector;
 	}
 
+	protected GmailSmtpConnector connectorGmailSmtpAsync() {
+
+		EntityQuery query = EntityQueryBuilder.from(GmailSmtpConnector.T).where().property(GmailSmtpConnector.externalId)
+				.eq(TEST_EXTERNAL_ID_SMTP_CONNECTION_GMAIL_GMAIL_ASYNC).done();
+		GmailSmtpConnector existing = cortexSession.query().entities(query).first();
+		if (existing != null) {
+			return existing;
+		}
+
+		GmailSmtpConnector emailGmailSmtpConnector = cortexSession.create(GmailSmtpConnector.T);
+		String externalId = TEST_EXTERNAL_ID_SMTP_CONNECTION_GMAIL_GMAIL_ASYNC;
+		emailGmailSmtpConnector.setExternalId(externalId);
+		emailGmailSmtpConnector.setName("Email Gmail Transmission Connection (Async)");
+		emailGmailSmtpConnector.setGlobalId(GLOBAL_ID_CONNECTION_PREFIX + externalId);
+		emailGmailSmtpConnector.setAutoDeploy(false);
+		emailGmailSmtpConnector.setSendAsync(true);
+
+		emailGmailSmtpConnector.setUser(GmailCredentials.getEmail());
+		emailGmailSmtpConnector.setPassword(GmailCredentials.getPassword());
+
+		logger.info(() -> "Creating SMTP connection to " + emailGmailSmtpConnector.getSmtpHostName() + " with credentials "
+				+ emailGmailSmtpConnector.getUser() + "/" + emailGmailSmtpConnector.getPassword());
+
+		cortexSession.commit();
+
+		return emailGmailSmtpConnector;
+	}
+
 	protected GmailImapConnector connectorGmailImap() {
 
 		EntityQuery query = EntityQueryBuilder.from(GmailImapConnector.T).where().property(GmailSmtpConnector.externalId)
@@ -1019,4 +1054,141 @@ public class EmailTestGmail extends AbstractEmailTest {
 
 	}
 
+	@Test
+	public void testSendAndReceiveTextWithTextAttachmentAsync() throws Exception {
+
+		Recipient to = Recipient.create(GmailCredentials.getEmail());
+
+		String bodyText = "Test w/ Text Attachment " + RandomTools.newStandardUuid();
+		String subject = "TEXT w/ Text Attachment Test at " + DateTools.getCurrentDateString();
+
+		String attText = "hello, world";
+		Resource resource = Resource.createTransient(() -> new ByteArrayInputStream(attText.getBytes("UTF-8")));
+		resource.setName("test.txt");
+		resource.setMimeType("text/plain");
+
+		Email email = Email.T.create();
+		email.getToList().add(to);
+		email.setSubject(subject);
+		email.setTextBody(bodyText);
+		email.getAttachments().add(resource);
+
+		deployDeployable(asyncSmtp);
+
+		SendEmail req = SendEmail.T.create();
+		req.setEmail(email);
+		req.setConnectorId(asyncSmtp.getExternalId());
+
+		EvalContext<? extends SentEmail> evalContext = req.eval(cortexSession);
+		SentEmail sentEmail = evalContext.get();
+		System.out.println("Sent message: " + sentEmail.getMessageId());
+
+		undeployDeployable(asyncSmtp);
+
+		long maxWait = System.currentTimeMillis() + Numbers.MILLISECONDS_PER_SECOND * 30;
+		do {
+
+			ReceiveEmails recReq = ReceiveEmails.T.create();
+			recReq.setMaxEmailCount(10);
+			recReq.setPostProcessing(ReceivedEmailPostProcessing.DELETE);
+			ReceivedEmails receivedEmails = recReq.eval(cortexSession).get();
+			List<ReceivedEmail> list = receivedEmails.getReceivedEmails();
+
+			if (list.size() > 0) {
+				assertThat(list).hasSize(1);
+
+				ReceivedEmail rm = list.get(0);
+				assertThat(rm).isNotNull();
+				assertThat(rm.getSubject()).isEqualTo(subject);
+				assertThat(rm.getTextBody().trim()).isEqualTo(bodyText);
+				assertThat(rm.getHtmlBody()).isNull();
+
+				List<Resource> attList = rm.getAttachments();
+				assertThat(attList).hasSize(1);
+				Resource recResource = attList.get(0);
+				assertThat(recResource.getName()).isEqualTo("test.txt");
+				try (InputStream in = recResource.openStream()) {
+					String attContent = IOTools.slurp(in, "UTF-8");
+					assertThat(attContent).isEqualTo(attText);
+				}
+
+				System.out.println("testSendAndReceiveTextWithTextAttachment: Sending email: " + sentEmail.getDurationInMs()
+						+ " ms, receiving email: " + receivedEmails.getDurationInMs() + " ms");
+
+				break;
+			} else {
+
+				Thread.sleep(Duration.of(5L, ChronoUnit.SECONDS));
+
+			}
+		} while (System.currentTimeMillis() < maxWait);
+
+	}
+
+	@Test
+	public void testSendAndReceiveTextWithMultipleTextAttachmentsWithSameName() throws Exception {
+
+		Recipient to = Recipient.create(GmailCredentials.getEmail());
+
+		String bodyText = "Test w/ Multiple Text Attachments " + RandomTools.newStandardUuid();
+		String subject = "TEXT w/ Multiple Text Attachments Test at " + DateTools.getCurrentDateString();
+
+		String attText1 = "hello, world 1";
+		Resource resource1 = Resource.createTransient(() -> new ByteArrayInputStream(attText1.getBytes("UTF-8")));
+		resource1.setName("test.txt");
+		resource1.setMimeType("text/plain");
+
+		String attText2 = "hello, world 2";
+		Resource resource2 = Resource.createTransient(() -> new ByteArrayInputStream(attText2.getBytes("UTF-8")));
+		resource2.setName("test.txt");
+		resource2.setMimeType("text/plain");
+
+		Email email = Email.T.create();
+		email.getToList().add(to);
+		email.setSubject(subject);
+		email.setTextBody(bodyText);
+		email.getAttachments().add(resource1);
+		email.getAttachments().add(resource2);
+
+		SendEmail req = SendEmail.T.create();
+		req.setEmail(email);
+		EvalContext<? extends SentEmail> evalContext = req.eval(cortexSession);
+		SentEmail sentEmail = evalContext.get();
+		System.out.println("Sent message: " + sentEmail.getMessageId());
+
+		ReceiveEmails recReq = ReceiveEmails.T.create();
+		recReq.setMaxEmailCount(10);
+		recReq.setPostProcessing(ReceivedEmailPostProcessing.DELETE);
+		ReceivedEmails receivedEmails = recReq.eval(cortexSession).get();
+		List<ReceivedEmail> list = receivedEmails.getReceivedEmails();
+		assertThat(list).hasSize(1);
+
+		ReceivedEmail rm = list.get(0);
+		assertThat(rm).isNotNull();
+		assertThat(rm.getSubject()).isEqualTo(subject);
+		assertThat(rm.getTextBody().trim()).isEqualTo(bodyText);
+		assertThat(rm.getHtmlBody()).isNull();
+
+		List<Resource> attList = rm.getAttachments();
+		assertThat(attList).hasSize(2);
+		boolean found1 = false;
+		boolean found2 = false;
+		for (Resource r : attList) {
+			assertThat(r.getName()).isEqualTo("test.txt");
+			try (InputStream in = r.openStream()) {
+				String attContent = IOTools.slurp(in, "UTF-8");
+				if (attContent.contains("1")) {
+					found1 = true;
+				} else if (attContent.contains("2")) {
+					found2 = true;
+				}
+			}
+		}
+		if (!found1 || !found2) {
+			throw new Exception("Could not find 1 or 2 in: " + attList);
+		}
+
+		System.out.println("testSendAndReceiveTextWithMultipleTextAttachments: Sending email: " + sentEmail.getDurationInMs()
+				+ " ms, receiving email: " + receivedEmails.getDurationInMs() + " ms");
+	}
 }

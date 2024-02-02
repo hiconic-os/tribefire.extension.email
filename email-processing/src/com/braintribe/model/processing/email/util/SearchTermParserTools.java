@@ -14,23 +14,11 @@ package com.braintribe.model.processing.email.util;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import javax.mail.Flags;
-import javax.mail.Message;
-import javax.mail.search.AndTerm;
-import javax.mail.search.BodyTerm;
-import javax.mail.search.FlagTerm;
-import javax.mail.search.FromStringTerm;
-import javax.mail.search.NotTerm;
-import javax.mail.search.OrTerm;
-import javax.mail.search.ReceivedDateTerm;
-import javax.mail.search.RecipientStringTerm;
-import javax.mail.search.SearchTerm;
-import javax.mail.search.SentDateTerm;
-import javax.mail.search.SubjectTerm;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -56,8 +44,21 @@ import com.braintribe.model.processing.email.search.SearchTermParser.UnreadConte
 import com.braintribe.model.processing.email.search.SearchTermParser.YoungerContext;
 import com.braintribe.utils.DateTools;
 import com.braintribe.utils.lcd.StringTools;
-import com.sun.mail.imap.OlderTerm; //NOSONAR: this is legit as it is part of the JavaMail API
-import com.sun.mail.imap.YoungerTerm; //NOSONAR: this is legit as it is part of the JavaMail API
+
+import jakarta.mail.Flags;
+import jakarta.mail.Message;
+import jakarta.mail.search.AndTerm;
+import jakarta.mail.search.BodyTerm;
+import jakarta.mail.search.ComparisonTerm;
+import jakarta.mail.search.FlagTerm;
+import jakarta.mail.search.FromStringTerm;
+import jakarta.mail.search.NotTerm;
+import jakarta.mail.search.OrTerm;
+import jakarta.mail.search.ReceivedDateTerm;
+import jakarta.mail.search.RecipientStringTerm;
+import jakarta.mail.search.SearchTerm;
+import jakarta.mail.search.SentDateTerm;
+import jakarta.mail.search.SubjectTerm;
 
 public class SearchTermParserTools {
 
@@ -67,10 +68,9 @@ public class SearchTermParserTools {
 
 	/* Uses the ANTLR4 grammaer defined in res/Searchterm.g4
 	 * 
-	 * Source code generation (in the res/ folder): java -cp
-	 * ~/.m2/repository-groups/org/antlr//antlr4/4.5/antlr4-4.5.jar org.antlr.v4.Tool -visitor -o
-	 * ../src/com/braintribe/model/processing/email/search -package com.braintribe.model.processing.email.search
-	 * SearchTerm.g4 */
+	 * Source code generation (in the res/ folder): java -cp ~/.m2/repository-groups/org/antlr//antlr4/4.5/antlr4-4.5.jar
+	 * org.antlr.v4.Tool -visitor -o ../src/com/braintribe/model/processing/email/search -package
+	 * com.braintribe.model.processing.email.search SearchTerm.g4 */
 
 	public static SearchTerm parseSearchTerm(String searchString) {
 
@@ -157,14 +157,18 @@ public class SearchTermParserTools {
 
 		@Override
 		public SearchTerm visitOlder(OlderContext ctx) {
-			int older = Integer.parseInt(ctx.decimal().getText());
-			return new OlderTerm(older);
+			int olderSeconds = Integer.parseInt(ctx.decimal().getText());
+			GregorianCalendar calendar = new GregorianCalendar();
+			calendar.add(Calendar.SECOND, -olderSeconds);
+			return new ReceivedDateTerm(ComparisonTerm.LT, calendar.getTime());
 		}
 
 		@Override
 		public SearchTerm visitYounger(YoungerContext ctx) {
-			int younger = Integer.parseInt(ctx.decimal().getText());
-			return new YoungerTerm(younger);
+			int olderSeconds = Integer.parseInt(ctx.decimal().getText());
+			GregorianCalendar calendar = new GregorianCalendar();
+			calendar.add(Calendar.SECOND, -olderSeconds);
+			return new ReceivedDateTerm(ComparisonTerm.GT, calendar.getTime());
 		}
 
 		@Override
