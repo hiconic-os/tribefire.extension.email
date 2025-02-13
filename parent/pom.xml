@@ -29,7 +29,7 @@ limitations under the License.
         <V.tribefire.setup.classic.env>[3.0,3.1)</V.tribefire.setup.classic.env>
         <V.tribefire.extension.web-api>[1.0,1.1)</V.tribefire.extension.web-api>
         <V.org.antlr>4.5</V.org.antlr>
-        <V.org.jsoup>1.14.3</V.org.jsoup>
+        <V.org.jsoup>1.15.3</V.org.jsoup>
         <V.org.simplejavamail>8.6.2</V.org.simplejavamail>
         <V.javax.servlet>3.0.1</V.javax.servlet>
         <V.com.sun.mail>2.0.1</V.com.sun.mail>
