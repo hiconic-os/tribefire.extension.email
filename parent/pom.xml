@@ -30,6 +30,7 @@ limitations under the License.
         <V.tribefire.extension.web-api>[1.0,1.1)</V.tribefire.extension.web-api>
         <V.org.antlr>4.5</V.org.antlr>
         <V.org.jsoup>1.18.3</V.org.jsoup>
+        <V.org.eclipse.angus>2.0.5</V.org.eclipse.angus>
         <V.org.simplejavamail>8.12.6</V.org.simplejavamail>
         <V.javax.servlet>3.0.1</V.javax.servlet>
         <V.com.sun.mail>2.0.1</V.com.sun.mail>

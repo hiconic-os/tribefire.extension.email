@@ -100,6 +100,11 @@ limitations under the License.
             <version>${V.org.jsoup}</version>
         </dependency>
         <dependency>
+            <groupId>org.eclipse.angus</groupId>
+            <artifactId>angus-mail</artifactId>
+            <version>${V.org.eclipse.angus}</version>
+        </dependency>
+        <dependency>
             <groupId>org.simplejavamail</groupId>
             <artifactId>simple-java-mail</artifactId>
             <version>${V.org.simplejavamail}</version>
@@ -107,6 +112,11 @@ limitations under the License.
                 <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>slf4j-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <!-- simplejavamail 8.12.6 brings angus-mail 2.0.3, we need 2.0.4 (vulnerabilities) -->
+                    <groupId>org.eclipse.angus</groupId>
+                    <artifactId>angus-mail</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
