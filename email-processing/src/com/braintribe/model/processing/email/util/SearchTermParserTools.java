@@ -15,16 +15,13 @@
 // ============================================================================
 package com.braintribe.model.processing.email.util;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.antlr.v4.runtime.ANTLRInputStream;
+import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 
@@ -77,15 +74,7 @@ public class SearchTermParserTools {
 	 * com.braintribe.model.processing.email.search SearchTerm.g4 */
 
 	public static SearchTerm parseSearchTerm(String searchString) {
-
-		ANTLRInputStream is;
-		try {
-			is = new ANTLRInputStream(new ByteArrayInputStream(searchString.getBytes()));
-		} catch (IOException e) {
-			throw new UncheckedIOException(e);
-		}
-
-		SearchTermLexer lexer = new SearchTermLexer(is);
+		SearchTermLexer lexer = new SearchTermLexer(CharStreams.fromString(searchString));
 		CommonTokenStream tokens = new CommonTokenStream(lexer);
 		SearchTermParser parser = new SearchTermParser(tokens);
 
@@ -207,7 +196,6 @@ public class SearchTermParserTools {
 
 		private static int translateComparisonToken(String comparison) {
 			switch (comparison) {
-
 				case "<=":
 					return 1;
 				case "<":

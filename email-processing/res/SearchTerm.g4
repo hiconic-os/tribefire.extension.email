@@ -1,5 +1,9 @@
 grammar SearchTerm;
 
+@header {
+package com.braintribe.model.processing.email.search;
+}
+
 // Keywords
 
 

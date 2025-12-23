@@ -1,19 +1,7 @@
-// ============================================================================
-// Copyright BRAINTRIBE TECHNOLOGY GMBH, Austria, 2002-2022
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-// ============================================================================
+// Generated from res/SearchTerm.g4 by ANTLR 4.13.2
+
 package com.braintribe.model.processing.email.search;
+
 import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.*;
@@ -23,9 +11,9 @@ import java.util.List;
 import java.util.Iterator;
 import java.util.ArrayList;
 
-@SuppressWarnings({"all", "warnings", "unchecked", "unused", "cast"})
+@SuppressWarnings({"all", "warnings", "unchecked", "unused", "cast", "CheckReturnValue", "this-escape"})
 public class SearchTermParser extends Parser {
-	static { RuntimeMetaData.checkVersion("4.5", RuntimeMetaData.VERSION); }
+	static { RuntimeMetaData.checkVersion("4.13.2", RuntimeMetaData.VERSION); }
 
 	protected static final DFA[] _decisionToDFA;
 	protected static final PredictionContextCache _sharedContextCache =
@@ -40,22 +28,31 @@ public class SearchTermParser extends Parser {
 		RULE_older = 9, RULE_younger = 10, RULE_recvdate = 11, RULE_sentdate = 12, 
 		RULE_body = 13, RULE_subject = 14, RULE_expression = 15, RULE_decimal = 16, 
 		RULE_operator = 17;
-	public static final String[] ruleNames = {
-		"searchTerm", "negation", "conjunction", "disjunction", "from", "to", 
-		"cc", "bcc", "unread", "older", "younger", "recvdate", "sentdate", "body", 
-		"subject", "expression", "decimal", "operator"
-	};
+	private static String[] makeRuleNames() {
+		return new String[] {
+			"searchTerm", "negation", "conjunction", "disjunction", "from", "to", 
+			"cc", "bcc", "unread", "older", "younger", "recvdate", "sentdate", "body", 
+			"subject", "expression", "decimal", "operator"
+		};
+	}
+	public static final String[] ruleNames = makeRuleNames();
 
-	private static final String[] _LITERAL_NAMES = {
-		null, "'('", "')'", "'from'", "'to'", "'cc'", "'bcc'", "'unread'", "'older'", 
-		"'younger'", "'recvdate'", "'sentdate'", "'body'", "'subject'", "'not'", 
-		"'and'", "'or'", "'='", "'<'", "'<='", "'>'", "'>='", "'!='"
-	};
-	private static final String[] _SYMBOLIC_NAMES = {
-		null, null, null, null, null, null, null, null, null, null, null, null, 
-		null, null, "NOT", "AND", "OR", "EQ", "LT", "LE", "GT", "GE", "NE", "STRING", 
-		"DIGIT", "SPACE"
-	};
+	private static String[] makeLiteralNames() {
+		return new String[] {
+			null, "'('", "')'", "'from'", "'to'", "'cc'", "'bcc'", "'unread'", "'older'", 
+			"'younger'", "'recvdate'", "'sentdate'", "'body'", "'subject'", "'not'", 
+			"'and'", "'or'", "'='", "'<'", "'<='", "'>'", "'>='", "'!='"
+		};
+	}
+	private static final String[] _LITERAL_NAMES = makeLiteralNames();
+	private static String[] makeSymbolicNames() {
+		return new String[] {
+			null, null, null, null, null, null, null, null, null, null, null, null, 
+			null, null, "NOT", "AND", "OR", "EQ", "LT", "LE", "GT", "GE", "NE", "STRING", 
+			"DIGIT", "SPACE"
+		};
+	}
+	private static final String[] _SYMBOLIC_NAMES = makeSymbolicNames();
 	public static final Vocabulary VOCABULARY = new VocabularyImpl(_LITERAL_NAMES, _SYMBOLIC_NAMES);
 
 	/**
@@ -105,6 +102,8 @@ public class SearchTermParser extends Parser {
 		super(input);
 		_interp = new ParserATNSimulator(this,_ATN,_decisionToDFA,_sharedContextCache);
 	}
+
+	@SuppressWarnings("CheckReturnValue")
 	public static class SearchTermContext extends ParserRuleContext {
 		public NegationContext negation() {
 			return getRuleContext(NegationContext.class,0);
@@ -153,14 +152,6 @@ public class SearchTermParser extends Parser {
 		}
 		@Override public int getRuleIndex() { return RULE_searchTerm; }
 		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SearchTermListener ) ((SearchTermListener)listener).enterSearchTerm(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SearchTermListener ) ((SearchTermListener)listener).exitSearchTerm(this);
-		}
-		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof SearchTermVisitor ) return ((SearchTermVisitor<? extends T>)visitor).visitSearchTerm(this);
 			else return visitor.visitChildren(this);
@@ -172,6 +163,7 @@ public class SearchTermParser extends Parser {
 		enterRule(_localctx, 0, RULE_searchTerm);
 		try {
 			setState(50);
+			_errHandler.sync(this);
 			switch ( getInterpreter().adaptivePredict(_input,0,_ctx) ) {
 			case 1:
 				enterOuterAlt(_localctx, 1);
@@ -284,6 +276,7 @@ public class SearchTermParser extends Parser {
 		return _localctx;
 	}
 
+	@SuppressWarnings("CheckReturnValue")
 	public static class NegationContext extends ParserRuleContext {
 		public TerminalNode NOT() { return getToken(SearchTermParser.NOT, 0); }
 		public SearchTermContext searchTerm() {
@@ -293,14 +286,6 @@ public class SearchTermParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_negation; }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SearchTermListener ) ((SearchTermListener)listener).enterNegation(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SearchTermListener ) ((SearchTermListener)listener).exitNegation(this);
-		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof SearchTermVisitor ) return ((SearchTermVisitor<? extends T>)visitor).visitNegation(this);
@@ -313,6 +298,7 @@ public class SearchTermParser extends Parser {
 		enterRule(_localctx, 2, RULE_negation);
 		try {
 			setState(59);
+			_errHandler.sync(this);
 			switch ( getInterpreter().adaptivePredict(_input,1,_ctx) ) {
 			case 1:
 				enterOuterAlt(_localctx, 1);
@@ -349,6 +335,7 @@ public class SearchTermParser extends Parser {
 		return _localctx;
 	}
 
+	@SuppressWarnings("CheckReturnValue")
 	public static class ConjunctionContext extends ParserRuleContext {
 		public List<SearchTermContext> searchTerm() {
 			return getRuleContexts(SearchTermContext.class);
@@ -364,14 +351,6 @@ public class SearchTermParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_conjunction; }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SearchTermListener ) ((SearchTermListener)listener).enterConjunction(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SearchTermListener ) ((SearchTermListener)listener).exitConjunction(this);
-		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof SearchTermVisitor ) return ((SearchTermVisitor<? extends T>)visitor).visitConjunction(this);
@@ -421,6 +400,7 @@ public class SearchTermParser extends Parser {
 		return _localctx;
 	}
 
+	@SuppressWarnings("CheckReturnValue")
 	public static class DisjunctionContext extends ParserRuleContext {
 		public List<SearchTermContext> searchTerm() {
 			return getRuleContexts(SearchTermContext.class);
@@ -436,14 +416,6 @@ public class SearchTermParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_disjunction; }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SearchTermListener ) ((SearchTermListener)listener).enterDisjunction(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SearchTermListener ) ((SearchTermListener)listener).exitDisjunction(this);
-		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof SearchTermVisitor ) return ((SearchTermVisitor<? extends T>)visitor).visitDisjunction(this);
@@ -493,22 +465,16 @@ public class SearchTermParser extends Parser {
 		return _localctx;
 	}
 
+	@SuppressWarnings("CheckReturnValue")
 	public static class FromContext extends ParserRuleContext {
 		public ExpressionContext expression() {
 			return getRuleContext(ExpressionContext.class,0);
 		}
+		public TerminalNode EQ() { return getToken(SearchTermParser.EQ, 0); }
 		public FromContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_from; }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SearchTermListener ) ((SearchTermListener)listener).enterFrom(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SearchTermListener ) ((SearchTermListener)listener).exitFrom(this);
-		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof SearchTermVisitor ) return ((SearchTermVisitor<? extends T>)visitor).visitFrom(this);
@@ -521,6 +487,7 @@ public class SearchTermParser extends Parser {
 		enterRule(_localctx, 8, RULE_from);
 		try {
 			setState(88);
+			_errHandler.sync(this);
 			switch ( getInterpreter().adaptivePredict(_input,4,_ctx) ) {
 			case 1:
 				enterOuterAlt(_localctx, 1);
@@ -555,22 +522,16 @@ public class SearchTermParser extends Parser {
 		return _localctx;
 	}
 
+	@SuppressWarnings("CheckReturnValue")
 	public static class ToContext extends ParserRuleContext {
 		public ExpressionContext expression() {
 			return getRuleContext(ExpressionContext.class,0);
 		}
+		public TerminalNode EQ() { return getToken(SearchTermParser.EQ, 0); }
 		public ToContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_to; }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SearchTermListener ) ((SearchTermListener)listener).enterTo(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SearchTermListener ) ((SearchTermListener)listener).exitTo(this);
-		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof SearchTermVisitor ) return ((SearchTermVisitor<? extends T>)visitor).visitTo(this);
@@ -583,6 +544,7 @@ public class SearchTermParser extends Parser {
 		enterRule(_localctx, 10, RULE_to);
 		try {
 			setState(95);
+			_errHandler.sync(this);
 			switch ( getInterpreter().adaptivePredict(_input,5,_ctx) ) {
 			case 1:
 				enterOuterAlt(_localctx, 1);
@@ -617,22 +579,16 @@ public class SearchTermParser extends Parser {
 		return _localctx;
 	}
 
+	@SuppressWarnings("CheckReturnValue")
 	public static class CcContext extends ParserRuleContext {
 		public ExpressionContext expression() {
 			return getRuleContext(ExpressionContext.class,0);
 		}
+		public TerminalNode EQ() { return getToken(SearchTermParser.EQ, 0); }
 		public CcContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_cc; }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SearchTermListener ) ((SearchTermListener)listener).enterCc(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SearchTermListener ) ((SearchTermListener)listener).exitCc(this);
-		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof SearchTermVisitor ) return ((SearchTermVisitor<? extends T>)visitor).visitCc(this);
@@ -645,6 +601,7 @@ public class SearchTermParser extends Parser {
 		enterRule(_localctx, 12, RULE_cc);
 		try {
 			setState(102);
+			_errHandler.sync(this);
 			switch ( getInterpreter().adaptivePredict(_input,6,_ctx) ) {
 			case 1:
 				enterOuterAlt(_localctx, 1);
@@ -679,22 +636,16 @@ public class SearchTermParser extends Parser {
 		return _localctx;
 	}
 
+	@SuppressWarnings("CheckReturnValue")
 	public static class BccContext extends ParserRuleContext {
 		public ExpressionContext expression() {
 			return getRuleContext(ExpressionContext.class,0);
 		}
+		public TerminalNode EQ() { return getToken(SearchTermParser.EQ, 0); }
 		public BccContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_bcc; }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SearchTermListener ) ((SearchTermListener)listener).enterBcc(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SearchTermListener ) ((SearchTermListener)listener).exitBcc(this);
-		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof SearchTermVisitor ) return ((SearchTermVisitor<? extends T>)visitor).visitBcc(this);
@@ -707,6 +658,7 @@ public class SearchTermParser extends Parser {
 		enterRule(_localctx, 14, RULE_bcc);
 		try {
 			setState(109);
+			_errHandler.sync(this);
 			switch ( getInterpreter().adaptivePredict(_input,7,_ctx) ) {
 			case 1:
 				enterOuterAlt(_localctx, 1);
@@ -741,19 +693,12 @@ public class SearchTermParser extends Parser {
 		return _localctx;
 	}
 
+	@SuppressWarnings("CheckReturnValue")
 	public static class UnreadContext extends ParserRuleContext {
 		public UnreadContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_unread; }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SearchTermListener ) ((SearchTermListener)listener).enterUnread(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SearchTermListener ) ((SearchTermListener)listener).exitUnread(this);
-		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof SearchTermVisitor ) return ((SearchTermVisitor<? extends T>)visitor).visitUnread(this);
@@ -782,6 +727,7 @@ public class SearchTermParser extends Parser {
 		return _localctx;
 	}
 
+	@SuppressWarnings("CheckReturnValue")
 	public static class OlderContext extends ParserRuleContext {
 		public DecimalContext decimal() {
 			return getRuleContext(DecimalContext.class,0);
@@ -790,14 +736,6 @@ public class SearchTermParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_older; }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SearchTermListener ) ((SearchTermListener)listener).enterOlder(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SearchTermListener ) ((SearchTermListener)listener).exitOlder(this);
-		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof SearchTermVisitor ) return ((SearchTermVisitor<? extends T>)visitor).visitOlder(this);
@@ -828,6 +766,7 @@ public class SearchTermParser extends Parser {
 		return _localctx;
 	}
 
+	@SuppressWarnings("CheckReturnValue")
 	public static class YoungerContext extends ParserRuleContext {
 		public DecimalContext decimal() {
 			return getRuleContext(DecimalContext.class,0);
@@ -836,14 +775,6 @@ public class SearchTermParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_younger; }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SearchTermListener ) ((SearchTermListener)listener).enterYounger(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SearchTermListener ) ((SearchTermListener)listener).exitYounger(this);
-		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof SearchTermVisitor ) return ((SearchTermVisitor<? extends T>)visitor).visitYounger(this);
@@ -874,6 +805,7 @@ public class SearchTermParser extends Parser {
 		return _localctx;
 	}
 
+	@SuppressWarnings("CheckReturnValue")
 	public static class RecvdateContext extends ParserRuleContext {
 		public OperatorContext operator() {
 			return getRuleContext(OperatorContext.class,0);
@@ -885,14 +817,6 @@ public class SearchTermParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_recvdate; }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SearchTermListener ) ((SearchTermListener)listener).enterRecvdate(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SearchTermListener ) ((SearchTermListener)listener).exitRecvdate(this);
-		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof SearchTermVisitor ) return ((SearchTermVisitor<? extends T>)visitor).visitRecvdate(this);
@@ -925,6 +849,7 @@ public class SearchTermParser extends Parser {
 		return _localctx;
 	}
 
+	@SuppressWarnings("CheckReturnValue")
 	public static class SentdateContext extends ParserRuleContext {
 		public OperatorContext operator() {
 			return getRuleContext(OperatorContext.class,0);
@@ -936,14 +861,6 @@ public class SearchTermParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_sentdate; }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SearchTermListener ) ((SearchTermListener)listener).enterSentdate(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SearchTermListener ) ((SearchTermListener)listener).exitSentdate(this);
-		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof SearchTermVisitor ) return ((SearchTermVisitor<? extends T>)visitor).visitSentdate(this);
@@ -976,22 +893,16 @@ public class SearchTermParser extends Parser {
 		return _localctx;
 	}
 
+	@SuppressWarnings("CheckReturnValue")
 	public static class BodyContext extends ParserRuleContext {
 		public ExpressionContext expression() {
 			return getRuleContext(ExpressionContext.class,0);
 		}
+		public TerminalNode EQ() { return getToken(SearchTermParser.EQ, 0); }
 		public BodyContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_body; }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SearchTermListener ) ((SearchTermListener)listener).enterBody(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SearchTermListener ) ((SearchTermListener)listener).exitBody(this);
-		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof SearchTermVisitor ) return ((SearchTermVisitor<? extends T>)visitor).visitBody(this);
@@ -1004,6 +915,7 @@ public class SearchTermParser extends Parser {
 		enterRule(_localctx, 26, RULE_body);
 		try {
 			setState(132);
+			_errHandler.sync(this);
 			switch ( getInterpreter().adaptivePredict(_input,8,_ctx) ) {
 			case 1:
 				enterOuterAlt(_localctx, 1);
@@ -1038,22 +950,16 @@ public class SearchTermParser extends Parser {
 		return _localctx;
 	}
 
+	@SuppressWarnings("CheckReturnValue")
 	public static class SubjectContext extends ParserRuleContext {
 		public ExpressionContext expression() {
 			return getRuleContext(ExpressionContext.class,0);
 		}
+		public TerminalNode EQ() { return getToken(SearchTermParser.EQ, 0); }
 		public SubjectContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_subject; }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SearchTermListener ) ((SearchTermListener)listener).enterSubject(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SearchTermListener ) ((SearchTermListener)listener).exitSubject(this);
-		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof SearchTermVisitor ) return ((SearchTermVisitor<? extends T>)visitor).visitSubject(this);
@@ -1066,6 +972,7 @@ public class SearchTermParser extends Parser {
 		enterRule(_localctx, 28, RULE_subject);
 		try {
 			setState(139);
+			_errHandler.sync(this);
 			switch ( getInterpreter().adaptivePredict(_input,9,_ctx) ) {
 			case 1:
 				enterOuterAlt(_localctx, 1);
@@ -1100,20 +1007,13 @@ public class SearchTermParser extends Parser {
 		return _localctx;
 	}
 
+	@SuppressWarnings("CheckReturnValue")
 	public static class ExpressionContext extends ParserRuleContext {
 		public TerminalNode STRING() { return getToken(SearchTermParser.STRING, 0); }
 		public ExpressionContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_expression; }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SearchTermListener ) ((SearchTermListener)listener).enterExpression(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SearchTermListener ) ((SearchTermListener)listener).exitExpression(this);
-		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof SearchTermVisitor ) return ((SearchTermVisitor<? extends T>)visitor).visitExpression(this);
@@ -1142,6 +1042,7 @@ public class SearchTermParser extends Parser {
 		return _localctx;
 	}
 
+	@SuppressWarnings("CheckReturnValue")
 	public static class DecimalContext extends ParserRuleContext {
 		public List<TerminalNode> DIGIT() { return getTokens(SearchTermParser.DIGIT); }
 		public TerminalNode DIGIT(int i) {
@@ -1151,14 +1052,6 @@ public class SearchTermParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_decimal; }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SearchTermListener ) ((SearchTermListener)listener).enterDecimal(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SearchTermListener ) ((SearchTermListener)listener).exitDecimal(this);
-		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof SearchTermVisitor ) return ((SearchTermVisitor<? extends T>)visitor).visitDecimal(this);
@@ -1200,6 +1093,7 @@ public class SearchTermParser extends Parser {
 		return _localctx;
 	}
 
+	@SuppressWarnings("CheckReturnValue")
 	public static class OperatorContext extends ParserRuleContext {
 		public TerminalNode EQ() { return getToken(SearchTermParser.EQ, 0); }
 		public TerminalNode LT() { return getToken(SearchTermParser.LT, 0); }
@@ -1211,14 +1105,6 @@ public class SearchTermParser extends Parser {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_operator; }
-		@Override
-		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof SearchTermListener ) ((SearchTermListener)listener).enterOperator(this);
-		}
-		@Override
-		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof SearchTermListener ) ((SearchTermListener)listener).exitOperator(this);
-		}
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
 			if ( visitor instanceof SearchTermVisitor ) return ((SearchTermVisitor<? extends T>)visitor).visitOperator(this);
@@ -1235,9 +1121,12 @@ public class SearchTermParser extends Parser {
 			{
 			setState(148);
 			_la = _input.LA(1);
-			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << EQ) | (1L << LT) | (1L << LE) | (1L << GT) | (1L << GE) | (1L << NE))) != 0)) ) {
+			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & 8257536L) != 0)) ) {
 			_errHandler.recoverInline(this);
-			} else {
+			}
+			else {
+				if ( _input.LA(1)==Token.EOF ) matchedEOF = true;
+				_errHandler.reportMatch(this);
 				consume();
 			}
 			}
@@ -1254,47 +1143,93 @@ public class SearchTermParser extends Parser {
 	}
 
 	public static final String _serializedATN =
-		"\3\u0430\ud6d1\u8206\uad2d\u4417\uaef1\u8d80\uaadd\3\33\u0099\4\2\t\2"+
-		"\4\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\4\b\t\b\4\t\t\t\4\n\t\n\4\13"+
-		"\t\13\4\f\t\f\4\r\t\r\4\16\t\16\4\17\t\17\4\20\t\20\4\21\t\21\4\22\t\22"+
-		"\4\23\t\23\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\5\2"+
-		"\65\n\2\3\3\3\3\3\3\3\3\3\3\3\3\3\3\5\3>\n\3\3\4\3\4\3\4\3\4\7\4D\n\4"+
-		"\f\4\16\4G\13\4\3\4\3\4\3\5\3\5\3\5\3\5\7\5O\n\5\f\5\16\5R\13\5\3\5\3"+
-		"\5\3\6\3\6\3\6\3\6\3\6\5\6[\n\6\3\7\3\7\3\7\3\7\3\7\5\7b\n\7\3\b\3\b\3"+
-		"\b\3\b\3\b\5\bi\n\b\3\t\3\t\3\t\3\t\3\t\5\tp\n\t\3\n\3\n\3\13\3\13\3\13"+
-		"\3\f\3\f\3\f\3\r\3\r\3\r\3\r\3\16\3\16\3\16\3\16\3\17\3\17\3\17\3\17\3"+
-		"\17\5\17\u0087\n\17\3\20\3\20\3\20\3\20\3\20\5\20\u008e\n\20\3\21\3\21"+
-		"\3\22\6\22\u0093\n\22\r\22\16\22\u0094\3\23\3\23\3\23\2\2\24\2\4\6\b\n"+
-		"\f\16\20\22\24\26\30\32\34\36 \"$\2\3\3\2\23\30\u009d\2\64\3\2\2\2\4="+
-		"\3\2\2\2\6?\3\2\2\2\bJ\3\2\2\2\nZ\3\2\2\2\fa\3\2\2\2\16h\3\2\2\2\20o\3"+
-		"\2\2\2\22q\3\2\2\2\24s\3\2\2\2\26v\3\2\2\2\30y\3\2\2\2\32}\3\2\2\2\34"+
-		"\u0086\3\2\2\2\36\u008d\3\2\2\2 \u008f\3\2\2\2\"\u0092\3\2\2\2$\u0096"+
-		"\3\2\2\2&\65\5\4\3\2\'\65\5\6\4\2(\65\5\b\5\2)\65\5\n\6\2*\65\5\f\7\2"+
-		"+\65\5\16\b\2,\65\5\20\t\2-\65\5\22\n\2.\65\5\24\13\2/\65\5\26\f\2\60"+
-		"\65\5\30\r\2\61\65\5\32\16\2\62\65\5\34\17\2\63\65\5\36\20\2\64&\3\2\2"+
-		"\2\64\'\3\2\2\2\64(\3\2\2\2\64)\3\2\2\2\64*\3\2\2\2\64+\3\2\2\2\64,\3"+
-		"\2\2\2\64-\3\2\2\2\64.\3\2\2\2\64/\3\2\2\2\64\60\3\2\2\2\64\61\3\2\2\2"+
-		"\64\62\3\2\2\2\64\63\3\2\2\2\65\3\3\2\2\2\66\67\7\20\2\2\678\7\3\2\28"+
-		"9\5\2\2\29:\7\4\2\2:>\3\2\2\2;<\7\20\2\2<>\5\2\2\2=\66\3\2\2\2=;\3\2\2"+
-		"\2>\5\3\2\2\2?@\7\3\2\2@E\5\2\2\2AB\7\21\2\2BD\5\2\2\2CA\3\2\2\2DG\3\2"+
-		"\2\2EC\3\2\2\2EF\3\2\2\2FH\3\2\2\2GE\3\2\2\2HI\7\4\2\2I\7\3\2\2\2JK\7"+
-		"\3\2\2KP\5\2\2\2LM\7\22\2\2MO\5\2\2\2NL\3\2\2\2OR\3\2\2\2PN\3\2\2\2PQ"+
-		"\3\2\2\2QS\3\2\2\2RP\3\2\2\2ST\7\4\2\2T\t\3\2\2\2UV\7\5\2\2V[\5 \21\2"+
-		"WX\7\5\2\2XY\7\23\2\2Y[\5 \21\2ZU\3\2\2\2ZW\3\2\2\2[\13\3\2\2\2\\]\7\6"+
-		"\2\2]b\5 \21\2^_\7\6\2\2_`\7\23\2\2`b\5 \21\2a\\\3\2\2\2a^\3\2\2\2b\r"+
-		"\3\2\2\2cd\7\7\2\2di\5 \21\2ef\7\7\2\2fg\7\23\2\2gi\5 \21\2hc\3\2\2\2"+
-		"he\3\2\2\2i\17\3\2\2\2jk\7\b\2\2kp\5 \21\2lm\7\b\2\2mn\7\23\2\2np\5 \21"+
-		"\2oj\3\2\2\2ol\3\2\2\2p\21\3\2\2\2qr\7\t\2\2r\23\3\2\2\2st\7\n\2\2tu\5"+
-		"\"\22\2u\25\3\2\2\2vw\7\13\2\2wx\5\"\22\2x\27\3\2\2\2yz\7\f\2\2z{\5$\23"+
-		"\2{|\5 \21\2|\31\3\2\2\2}~\7\r\2\2~\177\5$\23\2\177\u0080\5 \21\2\u0080"+
-		"\33\3\2\2\2\u0081\u0082\7\16\2\2\u0082\u0087\5 \21\2\u0083\u0084\7\16"+
-		"\2\2\u0084\u0085\7\23\2\2\u0085\u0087\5 \21\2\u0086\u0081\3\2\2\2\u0086"+
-		"\u0083\3\2\2\2\u0087\35\3\2\2\2\u0088\u0089\7\17\2\2\u0089\u008e\5 \21"+
-		"\2\u008a\u008b\7\17\2\2\u008b\u008c\7\23\2\2\u008c\u008e\5 \21\2\u008d"+
-		"\u0088\3\2\2\2\u008d\u008a\3\2\2\2\u008e\37\3\2\2\2\u008f\u0090\7\31\2"+
-		"\2\u0090!\3\2\2\2\u0091\u0093\7\32\2\2\u0092\u0091\3\2\2\2\u0093\u0094"+
-		"\3\2\2\2\u0094\u0092\3\2\2\2\u0094\u0095\3\2\2\2\u0095#\3\2\2\2\u0096"+
-		"\u0097\t\2\2\2\u0097%\3\2\2\2\r\64=EPZaho\u0086\u008d\u0094";
+		"\u0004\u0001\u0019\u0097\u0002\u0000\u0007\u0000\u0002\u0001\u0007\u0001"+
+		"\u0002\u0002\u0007\u0002\u0002\u0003\u0007\u0003\u0002\u0004\u0007\u0004"+
+		"\u0002\u0005\u0007\u0005\u0002\u0006\u0007\u0006\u0002\u0007\u0007\u0007"+
+		"\u0002\b\u0007\b\u0002\t\u0007\t\u0002\n\u0007\n\u0002\u000b\u0007\u000b"+
+		"\u0002\f\u0007\f\u0002\r\u0007\r\u0002\u000e\u0007\u000e\u0002\u000f\u0007"+
+		"\u000f\u0002\u0010\u0007\u0010\u0002\u0011\u0007\u0011\u0001\u0000\u0001"+
+		"\u0000\u0001\u0000\u0001\u0000\u0001\u0000\u0001\u0000\u0001\u0000\u0001"+
+		"\u0000\u0001\u0000\u0001\u0000\u0001\u0000\u0001\u0000\u0001\u0000\u0001"+
+		"\u0000\u0003\u00003\b\u0000\u0001\u0001\u0001\u0001\u0001\u0001\u0001"+
+		"\u0001\u0001\u0001\u0001\u0001\u0001\u0001\u0003\u0001<\b\u0001\u0001"+
+		"\u0002\u0001\u0002\u0001\u0002\u0001\u0002\u0005\u0002B\b\u0002\n\u0002"+
+		"\f\u0002E\t\u0002\u0001\u0002\u0001\u0002\u0001\u0003\u0001\u0003\u0001"+
+		"\u0003\u0001\u0003\u0005\u0003M\b\u0003\n\u0003\f\u0003P\t\u0003\u0001"+
+		"\u0003\u0001\u0003\u0001\u0004\u0001\u0004\u0001\u0004\u0001\u0004\u0001"+
+		"\u0004\u0003\u0004Y\b\u0004\u0001\u0005\u0001\u0005\u0001\u0005\u0001"+
+		"\u0005\u0001\u0005\u0003\u0005`\b\u0005\u0001\u0006\u0001\u0006\u0001"+
+		"\u0006\u0001\u0006\u0001\u0006\u0003\u0006g\b\u0006\u0001\u0007\u0001"+
+		"\u0007\u0001\u0007\u0001\u0007\u0001\u0007\u0003\u0007n\b\u0007\u0001"+
+		"\b\u0001\b\u0001\t\u0001\t\u0001\t\u0001\n\u0001\n\u0001\n\u0001\u000b"+
+		"\u0001\u000b\u0001\u000b\u0001\u000b\u0001\f\u0001\f\u0001\f\u0001\f\u0001"+
+		"\r\u0001\r\u0001\r\u0001\r\u0001\r\u0003\r\u0085\b\r\u0001\u000e\u0001"+
+		"\u000e\u0001\u000e\u0001\u000e\u0001\u000e\u0003\u000e\u008c\b\u000e\u0001"+
+		"\u000f\u0001\u000f\u0001\u0010\u0004\u0010\u0091\b\u0010\u000b\u0010\f"+
+		"\u0010\u0092\u0001\u0011\u0001\u0011\u0001\u0011\u0000\u0000\u0012\u0000"+
+		"\u0002\u0004\u0006\b\n\f\u000e\u0010\u0012\u0014\u0016\u0018\u001a\u001c"+
+		"\u001e \"\u0000\u0001\u0001\u0000\u0011\u0016\u009b\u00002\u0001\u0000"+
+		"\u0000\u0000\u0002;\u0001\u0000\u0000\u0000\u0004=\u0001\u0000\u0000\u0000"+
+		"\u0006H\u0001\u0000\u0000\u0000\bX\u0001\u0000\u0000\u0000\n_\u0001\u0000"+
+		"\u0000\u0000\ff\u0001\u0000\u0000\u0000\u000em\u0001\u0000\u0000\u0000"+
+		"\u0010o\u0001\u0000\u0000\u0000\u0012q\u0001\u0000\u0000\u0000\u0014t"+
+		"\u0001\u0000\u0000\u0000\u0016w\u0001\u0000\u0000\u0000\u0018{\u0001\u0000"+
+		"\u0000\u0000\u001a\u0084\u0001\u0000\u0000\u0000\u001c\u008b\u0001\u0000"+
+		"\u0000\u0000\u001e\u008d\u0001\u0000\u0000\u0000 \u0090\u0001\u0000\u0000"+
+		"\u0000\"\u0094\u0001\u0000\u0000\u0000$3\u0003\u0002\u0001\u0000%3\u0003"+
+		"\u0004\u0002\u0000&3\u0003\u0006\u0003\u0000\'3\u0003\b\u0004\u0000(3"+
+		"\u0003\n\u0005\u0000)3\u0003\f\u0006\u0000*3\u0003\u000e\u0007\u0000+"+
+		"3\u0003\u0010\b\u0000,3\u0003\u0012\t\u0000-3\u0003\u0014\n\u0000.3\u0003"+
+		"\u0016\u000b\u0000/3\u0003\u0018\f\u000003\u0003\u001a\r\u000013\u0003"+
+		"\u001c\u000e\u00002$\u0001\u0000\u0000\u00002%\u0001\u0000\u0000\u0000"+
+		"2&\u0001\u0000\u0000\u00002\'\u0001\u0000\u0000\u00002(\u0001\u0000\u0000"+
+		"\u00002)\u0001\u0000\u0000\u00002*\u0001\u0000\u0000\u00002+\u0001\u0000"+
+		"\u0000\u00002,\u0001\u0000\u0000\u00002-\u0001\u0000\u0000\u00002.\u0001"+
+		"\u0000\u0000\u00002/\u0001\u0000\u0000\u000020\u0001\u0000\u0000\u0000"+
+		"21\u0001\u0000\u0000\u00003\u0001\u0001\u0000\u0000\u000045\u0005\u000e"+
+		"\u0000\u000056\u0005\u0001\u0000\u000067\u0003\u0000\u0000\u000078\u0005"+
+		"\u0002\u0000\u00008<\u0001\u0000\u0000\u00009:\u0005\u000e\u0000\u0000"+
+		":<\u0003\u0000\u0000\u0000;4\u0001\u0000\u0000\u0000;9\u0001\u0000\u0000"+
+		"\u0000<\u0003\u0001\u0000\u0000\u0000=>\u0005\u0001\u0000\u0000>C\u0003"+
+		"\u0000\u0000\u0000?@\u0005\u000f\u0000\u0000@B\u0003\u0000\u0000\u0000"+
+		"A?\u0001\u0000\u0000\u0000BE\u0001\u0000\u0000\u0000CA\u0001\u0000\u0000"+
+		"\u0000CD\u0001\u0000\u0000\u0000DF\u0001\u0000\u0000\u0000EC\u0001\u0000"+
+		"\u0000\u0000FG\u0005\u0002\u0000\u0000G\u0005\u0001\u0000\u0000\u0000"+
+		"HI\u0005\u0001\u0000\u0000IN\u0003\u0000\u0000\u0000JK\u0005\u0010\u0000"+
+		"\u0000KM\u0003\u0000\u0000\u0000LJ\u0001\u0000\u0000\u0000MP\u0001\u0000"+
+		"\u0000\u0000NL\u0001\u0000\u0000\u0000NO\u0001\u0000\u0000\u0000OQ\u0001"+
+		"\u0000\u0000\u0000PN\u0001\u0000\u0000\u0000QR\u0005\u0002\u0000\u0000"+
+		"R\u0007\u0001\u0000\u0000\u0000ST\u0005\u0003\u0000\u0000TY\u0003\u001e"+
+		"\u000f\u0000UV\u0005\u0003\u0000\u0000VW\u0005\u0011\u0000\u0000WY\u0003"+
+		"\u001e\u000f\u0000XS\u0001\u0000\u0000\u0000XU\u0001\u0000\u0000\u0000"+
+		"Y\t\u0001\u0000\u0000\u0000Z[\u0005\u0004\u0000\u0000[`\u0003\u001e\u000f"+
+		"\u0000\\]\u0005\u0004\u0000\u0000]^\u0005\u0011\u0000\u0000^`\u0003\u001e"+
+		"\u000f\u0000_Z\u0001\u0000\u0000\u0000_\\\u0001\u0000\u0000\u0000`\u000b"+
+		"\u0001\u0000\u0000\u0000ab\u0005\u0005\u0000\u0000bg\u0003\u001e\u000f"+
+		"\u0000cd\u0005\u0005\u0000\u0000de\u0005\u0011\u0000\u0000eg\u0003\u001e"+
+		"\u000f\u0000fa\u0001\u0000\u0000\u0000fc\u0001\u0000\u0000\u0000g\r\u0001"+
+		"\u0000\u0000\u0000hi\u0005\u0006\u0000\u0000in\u0003\u001e\u000f\u0000"+
+		"jk\u0005\u0006\u0000\u0000kl\u0005\u0011\u0000\u0000ln\u0003\u001e\u000f"+
+		"\u0000mh\u0001\u0000\u0000\u0000mj\u0001\u0000\u0000\u0000n\u000f\u0001"+
+		"\u0000\u0000\u0000op\u0005\u0007\u0000\u0000p\u0011\u0001\u0000\u0000"+
+		"\u0000qr\u0005\b\u0000\u0000rs\u0003 \u0010\u0000s\u0013\u0001\u0000\u0000"+
+		"\u0000tu\u0005\t\u0000\u0000uv\u0003 \u0010\u0000v\u0015\u0001\u0000\u0000"+
+		"\u0000wx\u0005\n\u0000\u0000xy\u0003\"\u0011\u0000yz\u0003\u001e\u000f"+
+		"\u0000z\u0017\u0001\u0000\u0000\u0000{|\u0005\u000b\u0000\u0000|}\u0003"+
+		"\"\u0011\u0000}~\u0003\u001e\u000f\u0000~\u0019\u0001\u0000\u0000\u0000"+
+		"\u007f\u0080\u0005\f\u0000\u0000\u0080\u0085\u0003\u001e\u000f\u0000\u0081"+
+		"\u0082\u0005\f\u0000\u0000\u0082\u0083\u0005\u0011\u0000\u0000\u0083\u0085"+
+		"\u0003\u001e\u000f\u0000\u0084\u007f\u0001\u0000\u0000\u0000\u0084\u0081"+
+		"\u0001\u0000\u0000\u0000\u0085\u001b\u0001\u0000\u0000\u0000\u0086\u0087"+
+		"\u0005\r\u0000\u0000\u0087\u008c\u0003\u001e\u000f\u0000\u0088\u0089\u0005"+
+		"\r\u0000\u0000\u0089\u008a\u0005\u0011\u0000\u0000\u008a\u008c\u0003\u001e"+
+		"\u000f\u0000\u008b\u0086\u0001\u0000\u0000\u0000\u008b\u0088\u0001\u0000"+
+		"\u0000\u0000\u008c\u001d\u0001\u0000\u0000\u0000\u008d\u008e\u0005\u0017"+
+		"\u0000\u0000\u008e\u001f\u0001\u0000\u0000\u0000\u008f\u0091\u0005\u0018"+
+		"\u0000\u0000\u0090\u008f\u0001\u0000\u0000\u0000\u0091\u0092\u0001\u0000"+
+		"\u0000\u0000\u0092\u0090\u0001\u0000\u0000\u0000\u0092\u0093\u0001\u0000"+
+		"\u0000\u0000\u0093!\u0001\u0000\u0000\u0000\u0094\u0095\u0007\u0000\u0000"+
+		"\u0000\u0095#\u0001\u0000\u0000\u0000\u000b2;CNX_fm\u0084\u008b\u0092";
 	public static final ATN _ATN =
 		new ATNDeserializer().deserialize(_serializedATN.toCharArray());
 	static {
