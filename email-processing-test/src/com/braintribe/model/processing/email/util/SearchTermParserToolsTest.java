@@ -19,7 +19,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Date;
 
+import org.assertj.core.data.Offset;
 import org.junit.Test;
+
+import com.braintribe.common.lcd.Numbers;
 
 import jakarta.mail.Flags;
 import jakarta.mail.Message;
@@ -109,10 +112,13 @@ public class SearchTermParserToolsTest {
 		String input = "older 1234";
 
 		SearchTerm result = SearchTermParserTools.parseSearchTerm(input);
-		assertThat(result).isInstanceOf(ReceivedDateTerm.class);
+		assertThat(result).isInstanceOf(SentDateTerm.class);
 
-		ReceivedDateTerm term = (ReceivedDateTerm) result;
-		assertThat(term.getComparison()).isEqualTo(ComparisonTerm.LT);
+		SentDateTerm term = (SentDateTerm) result;
+		long actual = term.getDate().getTime();
+		long expected = (new Date()).getTime() - (1234 * Numbers.MILLISECONDS_PER_SECOND);
+		assertThat(actual).isCloseTo(expected, Offset.offset(1000L));
+		assertThat(term.getComparison()).isEqualTo(2);
 	}
 
 	@Test
@@ -121,10 +127,13 @@ public class SearchTermParserToolsTest {
 		String input = "younger 1234";
 
 		SearchTerm result = SearchTermParserTools.parseSearchTerm(input);
-		assertThat(result).isInstanceOf(ReceivedDateTerm.class);
+		assertThat(result).isInstanceOf(SentDateTerm.class);
 
-		ReceivedDateTerm term = (ReceivedDateTerm) result;
-		assertThat(term.getComparison()).isEqualTo(ComparisonTerm.GT);
+		SentDateTerm term = (SentDateTerm) result;
+		long actual = term.getDate().getTime();
+		long expected = (new Date()).getTime() - (1234 * Numbers.MILLISECONDS_PER_SECOND);
+		assertThat(actual).isCloseTo(expected, Offset.offset(1000L));
+		assertThat(term.getComparison()).isEqualTo(5);
 	}
 
 	@Test

@@ -50,7 +50,6 @@ import jakarta.mail.Flags;
 import jakarta.mail.Message;
 import jakarta.mail.search.AndTerm;
 import jakarta.mail.search.BodyTerm;
-import jakarta.mail.search.ComparisonTerm;
 import jakarta.mail.search.FlagTerm;
 import jakarta.mail.search.FromStringTerm;
 import jakarta.mail.search.NotTerm;
@@ -150,20 +149,24 @@ public class SearchTermParserTools {
 
 		@Override
 		public SearchTerm visitOlder(OlderContext ctx) {
-			int olderSeconds = Integer.parseInt(ctx.decimal().getText());
-			GregorianCalendar calendar = new GregorianCalendar();
-			calendar.add(Calendar.SECOND, -olderSeconds);
-			return new ReceivedDateTerm(ComparisonTerm.LT, calendar.getTime());
+			int older = Integer.parseInt(ctx.decimal().getText());
+			GregorianCalendar cal = new GregorianCalendar();
+			cal.add(Calendar.SECOND, -older);
+
+			int comparison = translateComparisonToken("<");
+			return new SentDateTerm(comparison, cal.getTime());
 		}
 
 		@Override
 		public SearchTerm visitYounger(YoungerContext ctx) {
-			int olderSeconds = Integer.parseInt(ctx.decimal().getText());
-			GregorianCalendar calendar = new GregorianCalendar();
-			calendar.add(Calendar.SECOND, -olderSeconds);
-			return new ReceivedDateTerm(ComparisonTerm.GT, calendar.getTime());
-		}
+			int younger = Integer.parseInt(ctx.decimal().getText());
+			GregorianCalendar cal = new GregorianCalendar();
+			cal.add(Calendar.SECOND, -younger);
 
+			int comparison = translateComparisonToken(">");
+			return new SentDateTerm(comparison, cal.getTime());
+		}
+		
 		@Override
 		public SearchTerm visitRecvdate(RecvdateContext ctx) {
 			String dateString = StringTools.removeFirstAndLastCharacter(ctx.expression().getText());
@@ -196,6 +199,7 @@ public class SearchTermParserTools {
 
 		private static int translateComparisonToken(String comparison) {
 			switch (comparison) {
+
 				case "<=":
 					return 1;
 				case "<":

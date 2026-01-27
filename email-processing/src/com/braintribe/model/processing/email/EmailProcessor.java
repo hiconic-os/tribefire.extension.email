@@ -17,15 +17,28 @@ package com.braintribe.model.processing.email;
 
 import static com.braintribe.utils.lcd.CollectionTools2.newList;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringWriter;
+import java.net.URI;
+import java.net.URLEncoder;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.Function;
@@ -37,21 +50,31 @@ import org.simplejavamail.email.EmailBuilder;
 
 import com.braintribe.cfg.Configurable;
 import com.braintribe.cfg.Required;
+import com.braintribe.codec.marshaller.api.EntityRecurrenceDepth;
+import com.braintribe.codec.marshaller.api.GmSerializationOptions;
+import com.braintribe.codec.marshaller.api.IdentityManagementMode;
+import com.braintribe.codec.marshaller.api.IdentityManagementModeOption;
+import com.braintribe.codec.marshaller.api.OutputPrettiness;
+import com.braintribe.codec.marshaller.api.PropertySerializationTranslation;
+import com.braintribe.codec.marshaller.api.TypeExplicitness;
+import com.braintribe.codec.marshaller.api.TypeExplicitnessOption;
+import com.braintribe.codec.marshaller.json.JsonStreamMarshaller;
 import com.braintribe.common.lcd.Pair;
 import com.braintribe.exception.Exceptions;
 import com.braintribe.gm.model.reason.Maybe;
 import com.braintribe.gm.model.reason.Reason;
 import com.braintribe.gm.model.reason.Reasons;
+import com.braintribe.gm.model.reason.essential.CommunicationError;
 import com.braintribe.gm.model.reason.essential.InternalError;
 import com.braintribe.gm.model.reason.essential.UnsupportedOperation;
 import com.braintribe.logging.Logger;
 import com.braintribe.model.deployment.DeploymentStatus;
 import com.braintribe.model.email.data.Email;
 import com.braintribe.model.email.data.ReceivedEmail;
-import com.braintribe.model.email.data.ReceivedImapEmail;
 import com.braintribe.model.email.data.Recipient;
 import com.braintribe.model.email.data.Sender;
 import com.braintribe.model.email.deployment.connection.EmailConnector;
+import com.braintribe.model.email.deployment.connection.MsGraphSendConnector;
 import com.braintribe.model.email.deployment.connection.Pop3Connector;
 import com.braintribe.model.email.deployment.connection.RetrieveConnector;
 import com.braintribe.model.email.deployment.connection.SendConnector;
@@ -73,18 +96,26 @@ import com.braintribe.model.email.service.ReceivedEmailPostProcessing;
 import com.braintribe.model.email.service.ReceivedEmails;
 import com.braintribe.model.email.service.SendEmail;
 import com.braintribe.model.email.service.SentEmail;
+import com.braintribe.model.email.service.msgraph.MsGraphAttachment;
+import com.braintribe.model.email.service.msgraph.MsGraphBody;
+import com.braintribe.model.email.service.msgraph.MsGraphEmailAddress;
+import com.braintribe.model.email.service.msgraph.MsGraphMail;
+import com.braintribe.model.email.service.msgraph.MsGraphMessage;
+import com.braintribe.model.email.service.msgraph.MsGraphRecipient;
 import com.braintribe.model.email.service.reason.ConfigurationMissing;
 import com.braintribe.model.email.service.reason.DeleteMailFailed;
 import com.braintribe.model.email.service.reason.MailNotFound;
 import com.braintribe.model.email.service.reason.MailServerConnectionError;
 import com.braintribe.model.email.service.reason.MailServerError;
 import com.braintribe.model.email.service.reason.MoveMailFailed;
+import com.braintribe.model.email.service.reason.OAuthAuthenticationFailed;
 import com.braintribe.model.email.service.reason.PostProcessingError;
 import com.braintribe.model.email.service.reason.PrepareOutgoingMailError;
 import com.braintribe.model.email.service.reason.RetrieveConnectorMissing;
 import com.braintribe.model.email.service.reason.SendConnectorMissing;
 import com.braintribe.model.email.service.reason.SetFlagFailed;
 import com.braintribe.model.generic.reflection.EntityType;
+import com.braintribe.model.generic.reflection.Property;
 import com.braintribe.model.generic.session.InputStreamProvider;
 import com.braintribe.model.processing.email.cache.MailerCache;
 import com.braintribe.model.processing.email.cache.MailerContext;
@@ -101,6 +132,7 @@ import com.braintribe.model.query.EntityQuery;
 import com.braintribe.model.resource.Resource;
 import com.braintribe.model.service.api.ServiceRequest;
 import com.braintribe.transport.http.util.HttpTools;
+import com.braintribe.utils.FileTools;
 import com.braintribe.utils.IOTools;
 import com.braintribe.utils.RandomTools;
 import com.braintribe.utils.StringTools;
@@ -109,6 +141,8 @@ import com.braintribe.utils.stream.CountingOutputStream;
 import com.braintribe.utils.stream.api.StreamPipe;
 import com.braintribe.utils.stream.api.StreamPipeFactory;
 import com.braintribe.utils.stream.api.StreamPipes;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.mail.Address;
 import jakarta.mail.BodyPart;
@@ -132,12 +166,15 @@ public class EmailProcessor implements ServiceProcessor<EmailServiceRequest, Ema
 
 	private static final Logger logger = Logger.getLogger(EmailProcessor.class);
 
+	private static JsonStreamMarshaller marshaller = new JsonStreamMarshaller();
+
 	private Supplier<? extends PersistenceGmSession> cortexSessionProvider;
 	private ClassLoader moduleClassLoader;
 
 	private MailerCache mailerCache;
 
 	protected StreamPipeFactory pipeStreamFactory;
+	private ExecutorService healthCheckExecutor;
 
 	private static FlagTerm unreadFlagTerm = new FlagTerm(new Flags(Flags.Flag.SEEN), false);
 
@@ -406,12 +443,13 @@ public class EmailProcessor implements ServiceProcessor<EmailServiceRequest, Ema
 			} else {
 				response.setEmailFound(true);
 				try {
-					Folder folder = mailboxContext.getFolder();
+					Folder fromFolder = mailboxContext.getFolder();
 					Folder targetFolder = mailboxContext.getFolder(request.getTargetFolder(), true);
+					fromFolder.copyMessages(messages, targetFolder);
 
-					folder.copyMessages(messages, targetFolder);
-					folder.setFlags(messages, new Flags(Flags.Flag.DELETED), true);
-					targetFolder.close(true);
+					Flags deleted = new Flags(Flags.Flag.DELETED);
+					fromFolder.setFlags(messages, deleted, true);
+					fromFolder.expunge();
 
 					response.setEmailMoved(true);
 				} catch (Exception e) {
@@ -427,8 +465,12 @@ public class EmailProcessor implements ServiceProcessor<EmailServiceRequest, Ema
 
 	protected Maybe<SentEmail> sendEmail(@SuppressWarnings("unused") ServiceRequestContext requestContext, SendEmail request) {
 
-		Email email = request.getEmail();
-		SentEmail result = SentEmail.T.create();
+		ClassLoader currentClassLoader = Thread.currentThread().getContextClassLoader();
+		try {
+			Thread.currentThread().setContextClassLoader(moduleClassLoader);
+
+			Email email = request.getEmail();
+			SentEmail result = SentEmail.T.create();
 
 		// to get the password we need to query the connection again with system session...
 		Maybe<SendConnector> connectorMaybe = getSystemSessionBasedConnector(SendConnector.T, request.getConnectorId());
@@ -439,8 +481,9 @@ public class EmailProcessor implements ServiceProcessor<EmailServiceRequest, Ema
 
 		String connectorId = emailTransmissionConnectorSystem.getExternalId();
 
-		if (emailTransmissionConnectorSystem instanceof SmtpConnector) {
-			SmtpConnector emailSmtpConnectorSystem = (SmtpConnector) emailTransmissionConnectorSystem;
+			try {
+
+				if (emailTransmissionConnectorSystem instanceof SmtpConnector emailSmtpConnectorSystem) {
 
 			final org.simplejavamail.api.email.Email resultingEmail;
 			try {
@@ -449,18 +492,249 @@ public class EmailProcessor implements ServiceProcessor<EmailServiceRequest, Ema
 				return exceptionToReason(PrepareOutgoingMailError.T, e, "Could not prepare outgoing email.");
 			}
 
-			try {
-				String messageId = sendEmail(resultingEmail, emailSmtpConnectorSystem);
-				result.setMessageId(messageId);
+					String messageId = sendEmail(resultingEmail, emailSmtpConnectorSystem);
+					result.setMessageId(messageId);
+
+				} else if (emailTransmissionConnectorSystem instanceof MsGraphSendConnector msgs) {
+
+					Maybe<String> messageIdMaybe = sendViaMsGraphApi(email, msgs);
+					if (messageIdMaybe.isUnsatisfied()) {
+						return messageIdMaybe.cast();
+					}
+					String messageId = messageIdMaybe.get();
+					result.setMessageId(messageId);
+
+				} else {
+					return Reasons.build(UnsupportedOperation.T).text("EmailTransmissionConnector: " + connectorId + " not supported!").toMaybe();
+				}
+
 			} catch (Exception e) {
 				return exceptionToReason(MailServerError.T, e, "Could not send eMail " + email + " to: " + email.getToList() + " cc: "
 						+ email.getCcList() + " bcc: " + email.getBccList() + " connection: " + connectorId);
 			}
-		} else {
-			return Reasons.build(UnsupportedOperation.T).text("EmailTransmissionConnector: " + connectorId + " not supported!").toMaybe();
+
+			return Maybe.complete(result);
+
+		} finally {
+			Thread.currentThread().setContextClassLoader(currentClassLoader);
+		}
+	}
+
+	private Maybe<String> sendViaMsGraphApi(Email email, MsGraphSendConnector connector) {
+
+		final MsGraphMail resultingEmail;
+		try {
+			resultingEmail = generateOutgoingMsGraohMail(email);
+		} catch (Exception e) {
+			return exceptionToReason(PrepareOutgoingMailError.T, e, "Could not prepare outgoing email.");
 		}
 
-		return Maybe.complete(result);
+		try (HttpClient client = HttpClient.newHttpClient()) {
+			Maybe<String> accessTokenMaybe = createAccessToken(client, connector);
+			if (accessTokenMaybe.isUnsatisfied()) {
+				return accessTokenMaybe.cast();
+			}
+			String accessToken = accessTokenMaybe.get();
+
+			Function<Property, String> propNameTranslation = property -> {
+				String propName = property.getName();
+				if (propName.equals("attachmentDataType")) {
+					return "@odata.type";
+				}
+				return propName;
+			};
+
+			StringWriter writer = new StringWriter();
+			//@formatter:off
+			marshaller.marshall(writer, resultingEmail, GmSerializationOptions.deriveDefaults()
+					.outputPrettiness(OutputPrettiness.high)
+					.writeAbsenceInformation(false)
+					.writeEmptyProperties(false)
+					.set(EntityRecurrenceDepth.class, -1) //
+					.set(TypeExplicitnessOption.class, TypeExplicitness.never) //
+					.set(IdentityManagementModeOption.class, IdentityManagementMode.off) //
+					.set(PropertySerializationTranslation.class, propNameTranslation) //
+					.build()
+					);
+			//@formatter:on
+
+			String body = writer.toString();
+			String from = null;
+
+			MsGraphRecipient fromRecipient = resultingEmail.getMessage().getFrom();
+			if (fromRecipient != null) {
+				MsGraphEmailAddress emailAddress = fromRecipient.getEmailAddress();
+				if (emailAddress != null) {
+					from = emailAddress.getAddress();
+				}
+			}
+
+			if (from == null) {
+				Sender defaultFrom = connector.getDefaultFrom();
+				if (defaultFrom != null) {
+					from = defaultFrom.getEMailAddress();
+				}
+			}
+
+			String sendUrl = connector.getSendUrl();
+			if (from != null) {
+				sendUrl = sendUrl.replace("${from}", URLEncoder.encode(from, StandardCharsets.UTF_8));
+			}
+
+			//@formatter:off
+			HttpRequest request = HttpRequest.newBuilder()
+					.uri(URI.create(sendUrl))
+					.header("Authorization", "Bearer "+accessToken)
+					.header("Content-Type", "application/json")
+					.POST(HttpRequest.BodyPublishers.ofString(body))
+					.build();
+			//@formatter:on
+
+			try {
+				HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+				int statusCode = response.statusCode();
+				if (statusCode >= 200 && statusCode < 300) {
+					return Maybe.complete(resultingEmail.getMessage().getInternetMessageId());
+				} else {
+					return Reasons.build(CommunicationError.T).text("Could not send message: " + response.statusCode() + " " + response.body())
+							.toMaybe();
+				}
+			} catch (Exception e) {
+				logger.error("Error while trying to get an access token: " + e.getMessage(), e);
+				return Reasons.build(CommunicationError.T).text("Could not get access token: " + e.getMessage()).toMaybe();
+			}
+		}
+	}
+
+	private MsGraphMail generateOutgoingMsGraohMail(Email email) {
+
+		String htmlBody = email.getHtmlBody();
+		String textBody = email.getTextBody();
+
+		MsGraphMail msmail = MsGraphMail.T.create();
+
+		MsGraphMessage message = MsGraphMessage.T.create();
+		message.setSubject(email.getSubject());
+		msmail.setMessage(message);
+
+		if (!StringTools.isBlank(htmlBody)) {
+			message.setBody(MsGraphBody.ofHtml(htmlBody));
+		} else if (!StringTools.isBlank(textBody)) {
+			message.setBody(MsGraphBody.ofText(textBody));
+		}
+
+		email.getToList().forEach(a -> {
+			message.getToRecipients().add(MsGraphRecipient.ofEmail(a.getEMailAddress()));
+		});
+		email.getCcList().forEach(a -> {
+			message.getCcRecipients().add(MsGraphRecipient.ofEmail(a.getEMailAddress()));
+		});
+		email.getBccList().forEach(a -> {
+			message.getBccRecipients().add(MsGraphRecipient.ofEmail(a.getEMailAddress()));
+		});
+		email.getReplyToList().forEach(a -> {
+			message.getReplyTo().add(MsGraphRecipient.ofEmail(a.getEMailAddress()));
+		});
+		List<Sender> fromList = email.getFromList();
+		if (fromList != null && !fromList.isEmpty()) {
+			Sender sender = fromList.get(0);
+			message.setFrom(MsGraphRecipient.ofEmail(sender.getEMailAddress()));
+		}
+
+		message.setInternetMessageId("<prov." + RandomTools.newStandardUuid() + "@localhost>");
+
+		List<Resource> attachments = email.getAttachments();
+		List<Resource> inlineAttachments = email.getInlineAttachments();
+
+		final Set<String> usedNames = new HashSet<>();
+		attachments.forEach(r -> {
+			MsGraphAttachment att = MsGraphAttachment.T.create();
+			String resourceName = findFreeName(r.getName(), usedNames);
+			att.setName(resourceName);
+			att.setContentType(r.getMimeType());
+			att.setContentBytes(getBase64EncodedContentOfResource(r));
+			att.setContentId(r.getId());
+			message.getAttachments().add(att);
+		});
+		inlineAttachments.forEach(r -> {
+			MsGraphAttachment att = MsGraphAttachment.T.create();
+			String resourceName = findFreeName(r.getName(), usedNames);
+			att.setName(resourceName);
+			att.setContentType(r.getMimeType());
+			att.setContentBytes(getBase64EncodedContentOfResource(r));
+			att.setIsInline(true);
+			att.setContentId(r.getId());
+			message.getAttachments().add(att);
+		});
+
+		return msmail;
+	}
+
+	private static String getBase64EncodedContentOfResource(Resource resource) {
+		try (InputStream in = new BufferedInputStream(resource.openStream())) {
+			byte[] bytes = IOTools.slurpBytes(in);
+			String result = Base64.getEncoder().encodeToString(bytes);
+			return result;
+		} catch (Exception e) {
+			throw Exceptions.unchecked(e, "Could not read and Bas46-encode content of resource " + resource + "; " + e.getMessage());
+		}
+	}
+
+	private Maybe<String> createAccessToken(HttpClient client, MsGraphSendConnector connector) {
+		String clientId = connector.getClientId();
+		String tenantId = connector.getTenantId();
+		String secret = connector.getSecret();
+		String scope = connector.getScope();
+
+		Map<String, String> formData = new HashMap<>();
+		formData.put("client_id", clientId);
+		formData.put("client_secret", secret);
+		formData.put("grant_type", "client_credentials");
+		formData.put("scope", scope);
+
+		String tokenUrl = connector.getTokenUrl();
+		tokenUrl = tokenUrl.replace("${tenantId}", tenantId);
+
+		//@formatter:off
+		HttpRequest request = HttpRequest.newBuilder()
+				.uri(URI.create(tokenUrl))
+				.header("Content-Type", "application/x-www-form-urlencoded")
+				.POST(HttpRequest.BodyPublishers.ofString(getFormDataAsString(formData)))
+				.build();
+		//@formatter:on
+
+		try {
+			HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+			int statusCode = response.statusCode();
+			if (statusCode != 200) {
+				return Reasons.build(OAuthAuthenticationFailed.T).text("Could not obtain an access token: " + statusCode + " " + response.body())
+						.toMaybe();
+			} else {
+				String body = response.body();
+
+				ObjectMapper mapper = new ObjectMapper();
+				JsonNode node = mapper.readTree(body);
+				JsonNode accessTokenNode = node.get("access_token");
+				String accessToken = accessTokenNode.asText();
+				return Maybe.complete(accessToken);
+			}
+		} catch (Exception e) {
+			logger.error("Error while trying to get an access token: " + e.getMessage(), e);
+			return Reasons.build(CommunicationError.T).text("Could not get access token: " + e.getMessage()).toMaybe();
+		}
+	}
+
+	private static String getFormDataAsString(Map<String, String> formData) {
+		StringBuilder formBodyBuilder = new StringBuilder();
+		for (Map.Entry<String, String> singleEntry : formData.entrySet()) {
+			if (formBodyBuilder.length() > 0) {
+				formBodyBuilder.append("&");
+			}
+			formBodyBuilder.append(URLEncoder.encode(singleEntry.getKey(), StandardCharsets.UTF_8));
+			formBodyBuilder.append("=");
+			formBodyBuilder.append(URLEncoder.encode(singleEntry.getValue(), StandardCharsets.UTF_8));
+		}
+		return formBodyBuilder.toString();
 	}
 
 	private org.simplejavamail.api.email.Email generateOutgoingMail(Email email, SmtpConnector smtpConnection) {
@@ -495,16 +769,44 @@ public class EmailProcessor implements ServiceProcessor<EmailServiceRequest, Ema
 	}
 
 	private void addAttachments(EmailPopulatingBuilder emailBuilder, List<Resource> attachments, boolean asyncSend) {
+		Set<String> usedNames = new HashSet<>();
 		attachments.forEach(resource -> {
 			ResourceDataSource dataSource = asyncSend ? new ResourceDataSource(pipeStreamFactory, resource) : new ResourceDataSource(resource);
-			emailBuilder.withAttachment(resource.getName(), dataSource);
+			String name = findFreeName(resource.getName(), usedNames);
+			emailBuilder.withAttachment(name, dataSource);
 		});
 	}
 	private void addInlineAttachments(EmailPopulatingBuilder emailBuilder, List<Resource> attachments, boolean asyncSend) {
+		Set<String> usedNames = new HashSet<>();
 		attachments.forEach(resource -> {
 			ResourceDataSource dataSource = asyncSend ? new ResourceDataSource(pipeStreamFactory, resource) : new ResourceDataSource(resource);
-			emailBuilder.withEmbeddedImage(resource.getName(), dataSource);
+			String name = findFreeName(resource.getName(), usedNames);
+			emailBuilder.withEmbeddedImage(name, dataSource);
 		});
+	}
+
+	protected static String findFreeName(String name, Set<String> usedNames) {
+		if (name == null) {
+			return null;
+		}
+		if (!usedNames.contains(name)) {
+			usedNames.add(name);
+			return name;
+		}
+		String rawName = FileTools.getNameWithoutExtension(name);
+		String postfix = "";
+		if (!rawName.equals(name)) {
+			postfix = name.substring(rawName.length());
+		}
+		int postfixCount = 2;
+		while (true) {
+			String testName = rawName + "-" + postfixCount + postfix;
+			if (!usedNames.contains(testName)) {
+				usedNames.add(testName);
+				return testName;
+			}
+			postfixCount++;
+		}
 	}
 
 	private String sendEmail(final org.simplejavamail.api.email.Email email, SmtpConnector connection) {
@@ -652,15 +954,7 @@ public class EmailProcessor implements ServiceProcessor<EmailServiceRequest, Ema
 	}
 
 	private ReceivedEmail processMessage(Message msg) throws MessagingException, IOException {
-		final ReceivedEmail email;
-
-		ReceivedImapEmail imapMessage = ReceivedImapEmail.T.create();
-		email = imapMessage;
-		Folder folder = msg.getFolder();
-		if (folder != null) {
-			imapMessage.setImapFolder(folder.getFullName());
-		}
-
+		final ReceivedEmail email = ReceivedEmail.T.create();
 		if (msg instanceof MimeMessage) {
 			MimeMessage mimeMessage = (MimeMessage) msg;
 			email.setId(mimeMessage.getMessageID());
@@ -994,6 +1288,11 @@ public class EmailProcessor implements ServiceProcessor<EmailServiceRequest, Ema
 	@Configurable
 	public void setPipeStreamFactory(StreamPipeFactory pipeStreamFactory) {
 		this.pipeStreamFactory = pipeStreamFactory;
+	}
+	@Configurable
+	@Required
+	public void setHealthCheckExecutor(ExecutorService healthCheckExecutor) {
+		this.healthCheckExecutor = healthCheckExecutor;
 	}
 
 }

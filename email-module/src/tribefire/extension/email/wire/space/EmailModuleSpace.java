@@ -20,6 +20,8 @@ import com.braintribe.model.email.deployment.connection.Pop3Connector;
 import com.braintribe.model.email.deployment.connection.GmailImapConnector;
 import com.braintribe.model.email.deployment.connection.GmailSmtpConnector;
 import com.braintribe.model.email.deployment.connection.ImapConnector;
+import com.braintribe.model.email.deployment.connection.MsGraphSendConnector;
+import com.braintribe.model.email.deployment.connection.Pop3Connector;
 import com.braintribe.model.email.deployment.connection.SmtpConnector;
 import com.braintribe.model.email.deployment.connection.YahooSmtpConnector;
 import com.braintribe.model.email.deployment.service.EmailServiceProcessor;
@@ -68,6 +70,9 @@ public class EmailModuleSpace implements TribefireModuleContract {
 		bindings.bind(HealthCheckProcessor.T)
 			.component(commonComponents.checkProcessor())
 			.expertFactory(this.deployables::healthCheckProcessor);
+		bindings.bind(MsGraphSendConnector.T)
+			.component(EmailConnector.T, com.braintribe.model.processing.email.connection.MsGraphSendConnector.class)
+			.expertFactory(deployables::msGraphSendConnector);
 		
 		// -----------------------------------------------------------------------
 		// REQUEST PROCESSOR

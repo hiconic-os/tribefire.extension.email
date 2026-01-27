@@ -15,11 +15,18 @@
 // ============================================================================
 package tribefire.extension.email.wire.space;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
+import com.braintribe.execution.ThreadPoolBuilder;
+import com.braintribe.execution.queue.LimitedQueue;
 import com.braintribe.model.processing.deployment.api.ExpertContext;
 import com.braintribe.model.processing.email.EmailProcessor;
 import com.braintribe.model.processing.email.HealthCheckProcessor;
 import com.braintribe.model.processing.email.cache.MailerCache;
 import com.braintribe.model.processing.email.connection.ImapConnectorImpl;
+import com.braintribe.model.processing.email.connection.MsGraphSendConnectorImpl;
 import com.braintribe.model.processing.email.connection.Pop3ConnectorImpl;
 import com.braintribe.model.processing.email.connection.SmtpConnectorImpl;
 import com.braintribe.wire.api.annotation.Import;
@@ -106,6 +113,7 @@ public class EmailDeployablesSpace implements WireSpace {
 		bean.setModuleClassLoader(reflection.moduleClassLoader());
 		bean.setMailerCache(mailerCache());
 		bean.setPipeStreamFactory(resourceProcessing.streamPipeFactory());
+		bean.setHealthCheckExecutor(healthCheckExecutor());
 
 		return bean;
 	}
@@ -123,8 +131,36 @@ public class EmailDeployablesSpace implements WireSpace {
 	}
 
 	@Managed
+	private ExecutorService healthCheckExecutor() {
+		int workerThreads = 5;
+		//@formatter:off
+		return ThreadPoolBuilder.newPool()
+				.poolSize(workerThreads, workerThreads)
+				.keepAliveTime(60L, TimeUnit.SECONDS)
+				.workQueue(new LimitedQueue<>(1))
+				.rejectionHandler(new ThreadPoolExecutor.CallerRunsPolicy()) 
+				.waitForTasksToCompleteOnShutdown(true)
+				.threadNamePrefix("EmailConnectionCheck")
+				.description("Email Check Executor") 
+				.build();
+		//@formatter:on
+	}
+
+	@Managed
 	private MailerCache mailerCache() {
 		MailerCache bean = new MailerCache();
 		return bean;
 	}
+
+	@Managed
+	public MsGraphSendConnectorImpl msGraphSendConnector(
+			ExpertContext<? extends com.braintribe.model.email.deployment.connection.MsGraphSendConnector> context) {
+		com.braintribe.model.email.deployment.connection.MsGraphSendConnector deployable = context.getDeployable();
+
+		MsGraphSendConnectorImpl bean = new MsGraphSendConnectorImpl();
+		bean.setConnector(deployable);
+
+		return bean;
+	}
+
 }
