@@ -20,7 +20,7 @@ limitations under the License.
         <version>[6.0,6.1)</version>
     </parent>
     <artifactId>email-processing</artifactId>
-    <version>6.0.1-pc-1</version>
+    <version>6.0.1-pc-2</version>
     <!-- TODO: cleanup dependency! -->
     <properties>
         <archetype>library</archetype>
