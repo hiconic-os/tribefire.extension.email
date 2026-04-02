@@ -1,3 +1,6 @@
 TribefireModule = com.braintribe.model.asset.natures.TribefireModule
 
 $nature = TribefireModule()
+// We use jakarta.mail:jakarta.mail-api and com.sun.mail:jakarta-mail which includes classes from the former
+// This is a problem when one of them lands on the platform classpath and and the other does not
+.forbiddenDeps=['jakarta.mail:.*','com.sun.mail:.*']
