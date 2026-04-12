@@ -472,25 +472,24 @@ public class EmailProcessor implements ServiceProcessor<EmailServiceRequest, Ema
 			Email email = request.getEmail();
 			SentEmail result = SentEmail.T.create();
 
-		// to get the password we need to query the connection again with system session...
-		Maybe<SendConnector> connectorMaybe = getSystemSessionBasedConnector(SendConnector.T, request.getConnectorId());
-		if (!connectorMaybe.isSatisfied()) {
-			return connectorMaybe.whyUnsatisfied().asMaybe();
-		}
-		SendConnector emailTransmissionConnectorSystem = connectorMaybe.get();
+			// to get the password we need to query the connection again with system session...
+			Maybe<SendConnector> connectorMaybe = getSystemSessionBasedConnector(SendConnector.T, request.getConnectorId());
+			if (!connectorMaybe.isSatisfied()) {
+				return connectorMaybe.whyUnsatisfied().asMaybe();
+			}
+			SendConnector emailTransmissionConnectorSystem = connectorMaybe.get();
 
-		String connectorId = emailTransmissionConnectorSystem.getExternalId();
+			String connectorId = emailTransmissionConnectorSystem.getExternalId();
 
 			try {
 
 				if (emailTransmissionConnectorSystem instanceof SmtpConnector emailSmtpConnectorSystem) {
-
-			final org.simplejavamail.api.email.Email resultingEmail;
-			try {
-				resultingEmail = generateOutgoingMail(email, emailSmtpConnectorSystem);
-			} catch (Exception e) {
-				return exceptionToReason(PrepareOutgoingMailError.T, e, "Could not prepare outgoing email.");
-			}
+					final org.simplejavamail.api.email.Email resultingEmail;
+					try {
+						resultingEmail = generateOutgoingMail(email, emailSmtpConnectorSystem);
+					} catch (Exception e) {
+						return exceptionToReason(PrepareOutgoingMailError.T, e, "Could not prepare outgoing email.");
+					}
 
 					String messageId = sendEmail(resultingEmail, emailSmtpConnectorSystem);
 					result.setMessageId(messageId);
