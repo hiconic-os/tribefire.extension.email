@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?><!--
+<!--
 Copyright BRAINTRIBE TECHNOLOGY GMBH, Austria, 2002-2022
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ limitations under the License.
         <version>[6.0,6.1)</version>
     </parent>
     <artifactId>email-deployment-model</artifactId>
-    <version>6.0.2</version>
+    <version>6.0.3</version>
     <properties>
         <archetype>model</archetype>
     </properties>
