@@ -15,10 +15,7 @@
 // ============================================================================
 package com.braintribe.model.email.deployment.connection;
 
-import com.braintribe.model.generic.annotation.Initializer;
 import com.braintribe.model.generic.annotation.SelectiveInformation;
-import com.braintribe.model.generic.annotation.meta.Mandatory;
-import com.braintribe.model.generic.annotation.meta.Unmodifiable;
 import com.braintribe.model.generic.reflection.EntityType;
 import com.braintribe.model.generic.reflection.EntityTypes;
 
@@ -26,32 +23,8 @@ import com.braintribe.model.generic.reflection.EntityTypes;
  *
  */
 @SelectiveInformation("Gmail SMTP Connector")
-public interface GmailSmtpConnector extends SmtpConnector {
+public interface GmailSmtpConnector extends GmailSmtpConnectorConfiguration, SmtpConnector {
 
-	final EntityType<GmailSmtpConnector> T = EntityTypes.T(GmailSmtpConnector.class);
-
-	@Mandatory
-	@Initializer("'smtp.gmail.com'")
-	@Unmodifiable
-	@Override
-	String getSmtpHostName();
-	@Override
-	void setSmtpHostName(String smtpHostName);
-
-	@Mandatory
-	@Initializer("587")
-	@Unmodifiable
-	@Override
-	int getSmtpPort();
-	@Override
-	void setSmtpPort(int port);
-
-	@Mandatory
-	@Initializer("enum(com.braintribe.model.email.deployment.connection.TransportStrategy,SMTP_TLS)")
-	@Unmodifiable
-	@Override
-	TransportStrategy getTransportStrategy();
-	@Override
-	void setTransportStrategy(TransportStrategy protocol);
+	EntityType<GmailSmtpConnector> T = EntityTypes.T(GmailSmtpConnector.class);
 
 }

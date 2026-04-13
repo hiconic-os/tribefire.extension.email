@@ -25,12 +25,12 @@ public class SmtpConnectorImpl implements com.braintribe.model.processing.email.
 
 	private static final Logger logger = Logger.getLogger(SmtpConnectorImpl.class);
 
-	private com.braintribe.model.email.deployment.connection.SmtpConnector connector;
+	private com.braintribe.model.email.deployment.connection.SmtpConnectorConfiguration connector;
 	private MailerCache mailerCache;
 
 	@Configurable
 	@Required
-	public void setConnector(com.braintribe.model.email.deployment.connection.SmtpConnector connector) {
+	public void setConnector(com.braintribe.model.email.deployment.connection.SmtpConnectorConfiguration connector) {
 		this.connector = connector;
 	}
 

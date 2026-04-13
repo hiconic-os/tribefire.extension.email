@@ -26,8 +26,8 @@ import com.braintribe.model.generic.reflection.EntityTypes;
  */
 @Abstract
 @DeployableComponent
-public interface EmailConnector extends Connector {
+public interface EmailConnector extends EmailConnectorConfiguration, Connector {
 
-	final EntityType<EmailConnector> T = EntityTypes.T(EmailConnector.class);
+	EntityType<EmailConnector> T = EntityTypes.T(EmailConnector.class);
 
 }

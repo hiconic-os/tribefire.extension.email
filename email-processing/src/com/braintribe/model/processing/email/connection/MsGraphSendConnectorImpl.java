@@ -15,11 +15,11 @@ public class MsGraphSendConnectorImpl implements com.braintribe.model.processing
 
 	private static final Logger logger = Logger.getLogger(MsGraphSendConnectorImpl.class);
 
-	private com.braintribe.model.email.deployment.connection.MsGraphSendConnector connector;
+	private com.braintribe.model.email.deployment.connection.MsGraphSendConnectorConfiguration connector;
 
 	@Configurable
 	@Required
-	public void setConnector(com.braintribe.model.email.deployment.connection.MsGraphSendConnector connector) {
+	public void setConnector(com.braintribe.model.email.deployment.connection.MsGraphSendConnectorConfiguration connector) {
 		this.connector = connector;
 	}
 

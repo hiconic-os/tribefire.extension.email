@@ -29,16 +29,16 @@ import com.braintribe.cfg.DestructionAware;
 import com.braintribe.execution.virtual.VirtualThreadExecutor;
 import com.braintribe.execution.virtual.VirtualThreadExecutorBuilder;
 import com.braintribe.logging.Logger;
-import com.braintribe.model.email.deployment.connection.SmtpConnector;
+import com.braintribe.model.email.deployment.connection.SmtpConnectorConfiguration;
 import com.braintribe.utils.lcd.StringTools;
 
 public class MailerCache implements DestructionAware {
 
 	private static final Logger logger = Logger.getLogger(MailerCache.class);
 
-	private ConcurrentHashMap<String, MailerContext> mailers = new ConcurrentHashMap<>();
+	private final ConcurrentHashMap<String, MailerContext> mailers = new ConcurrentHashMap<>();
 
-	public MailerContext getMailer(SmtpConnector smtpConnector) {
+	public MailerContext getMailer(SmtpConnectorConfiguration smtpConnector) {
 
 		if (smtpConnector == null) {
 			throw new IllegalArgumentException("The smtp connector must not be null.");
@@ -83,7 +83,7 @@ public class MailerCache implements DestructionAware {
 		return mailerContext;
 	}
 
-	private ExecutorService setPoolSizes(SmtpConnector smtpConnector, MailerRegularBuilderImpl mailerBuilder) {
+	private ExecutorService setPoolSizes(SmtpConnectorConfiguration smtpConnector, MailerRegularBuilderImpl mailerBuilder) {
 		Integer threadPoolSize = smtpConnector.getThreadPoolSize();
 		if (threadPoolSize != null && threadPoolSize > 0) {
 			mailerBuilder.withThreadPoolSize(threadPoolSize);
@@ -108,7 +108,7 @@ public class MailerCache implements DestructionAware {
 		return executor;
 	}
 
-	private void setProxy(SmtpConnector smtpConnector, MailerRegularBuilderImpl mailerBuilder) {
+	private void setProxy(SmtpConnectorConfiguration smtpConnector, MailerRegularBuilderImpl mailerBuilder) {
 		Integer proxyBridgePort = smtpConnector.getProxyBridgePort();
 		if (proxyBridgePort != null && proxyBridgePort > 0) {
 			mailerBuilder.withProxyBridgePort(proxyBridgePort);

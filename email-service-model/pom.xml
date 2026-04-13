@@ -56,8 +56,9 @@ limitations under the License.
             <version>${V.com.braintribe.gm}</version>
         </dependency>
         <dependency>
+        	<!-- Why does this need to be here? -->
             <groupId>tribefire.cortex</groupId>
-            <artifactId>check-api-model</artifactId>
+            <artifactId>check-base-api-model</artifactId>
             <version>${V.tribefire.cortex}</version>
         </dependency>
         <dependency>

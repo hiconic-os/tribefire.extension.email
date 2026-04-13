@@ -20,8 +20,8 @@ import com.braintribe.model.generic.reflection.EntityType;
 import com.braintribe.model.generic.reflection.EntityTypes;
 
 @SelectiveInformation("POP3 Connector ${host}")
-public interface Pop3Connector extends RetrieveConnector {
+public interface Pop3Connector extends Pop3ConnectorConfiguration, RetrieveConnector {
 
-	final EntityType<Pop3Connector> T = EntityTypes.T(Pop3Connector.class);
+	EntityType<Pop3Connector> T = EntityTypes.T(Pop3Connector.class);
 
 }

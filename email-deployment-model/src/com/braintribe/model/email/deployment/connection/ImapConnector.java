@@ -20,8 +20,8 @@ import com.braintribe.model.generic.reflection.EntityType;
 import com.braintribe.model.generic.reflection.EntityTypes;
 
 @SelectiveInformation("IMAP Connector ${host}")
-public interface ImapConnector extends RetrieveConnector {
+public interface ImapConnector extends ImapConnectorConfiguration, RetrieveConnector {
 
-	final EntityType<ImapConnector> T = EntityTypes.T(ImapConnector.class);
+	EntityType<ImapConnector> T = EntityTypes.T(ImapConnector.class);
 
 }

@@ -31,7 +31,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Base64;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -42,7 +41,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 import org.simplejavamail.api.email.EmailPopulatingBuilder;
 import org.simplejavamail.api.mailer.Mailer;
@@ -68,17 +66,15 @@ import com.braintribe.gm.model.reason.essential.CommunicationError;
 import com.braintribe.gm.model.reason.essential.InternalError;
 import com.braintribe.gm.model.reason.essential.UnsupportedOperation;
 import com.braintribe.logging.Logger;
-import com.braintribe.model.deployment.DeploymentStatus;
 import com.braintribe.model.email.data.Email;
 import com.braintribe.model.email.data.ReceivedEmail;
 import com.braintribe.model.email.data.Recipient;
 import com.braintribe.model.email.data.Sender;
-import com.braintribe.model.email.deployment.connection.EmailConnector;
-import com.braintribe.model.email.deployment.connection.MsGraphSendConnector;
-import com.braintribe.model.email.deployment.connection.Pop3Connector;
-import com.braintribe.model.email.deployment.connection.RetrieveConnector;
-import com.braintribe.model.email.deployment.connection.SendConnector;
-import com.braintribe.model.email.deployment.connection.SmtpConnector;
+import com.braintribe.model.email.deployment.connection.MsGraphSendConnectorConfiguration;
+import com.braintribe.model.email.deployment.connection.Pop3ConnectorConfiguration;
+import com.braintribe.model.email.deployment.connection.RetrieveConnectorConfiguration;
+import com.braintribe.model.email.deployment.connection.SendConnectorConfiguration;
+import com.braintribe.model.email.deployment.connection.SmtpConnectorConfiguration;
 import com.braintribe.model.email.service.CheckConnections;
 import com.braintribe.model.email.service.ConnectionCheckResult;
 import com.braintribe.model.email.service.ConnectionCheckResultEntry;
@@ -111,24 +107,20 @@ import com.braintribe.model.email.service.reason.MoveMailFailed;
 import com.braintribe.model.email.service.reason.OAuthAuthenticationFailed;
 import com.braintribe.model.email.service.reason.PostProcessingError;
 import com.braintribe.model.email.service.reason.PrepareOutgoingMailError;
-import com.braintribe.model.email.service.reason.RetrieveConnectorMissing;
-import com.braintribe.model.email.service.reason.SendConnectorMissing;
 import com.braintribe.model.email.service.reason.SetFlagFailed;
 import com.braintribe.model.generic.reflection.EntityType;
 import com.braintribe.model.generic.reflection.Property;
 import com.braintribe.model.generic.session.InputStreamProvider;
+import com.braintribe.model.processing.email.api.ConnectorConfigurationProvider;
 import com.braintribe.model.processing.email.cache.MailerCache;
 import com.braintribe.model.processing.email.cache.MailerContext;
 import com.braintribe.model.processing.email.util.MailboxContext;
 import com.braintribe.model.processing.email.util.ResourceDataSource;
 import com.braintribe.model.processing.email.util.SearchTermParserTools;
 import com.braintribe.model.processing.email.util.SmtpUtil;
-import com.braintribe.model.processing.query.fluent.EntityQueryBuilder;
 import com.braintribe.model.processing.service.api.ServiceProcessor;
 import com.braintribe.model.processing.service.api.ServiceRequestContext;
 import com.braintribe.model.processing.service.impl.ServiceProcessors;
-import com.braintribe.model.processing.session.api.persistence.PersistenceGmSession;
-import com.braintribe.model.query.EntityQuery;
 import com.braintribe.model.resource.Resource;
 import com.braintribe.model.service.api.ServiceRequest;
 import com.braintribe.transport.http.util.HttpTools;
@@ -168,7 +160,7 @@ public class EmailProcessor implements ServiceProcessor<EmailServiceRequest, Ema
 
 	private static JsonStreamMarshaller marshaller = new JsonStreamMarshaller();
 
-	private Supplier<? extends PersistenceGmSession> cortexSessionProvider;
+	private ConnectorConfigurationProvider connectorConfigurationProvider;
 	private ClassLoader moduleClassLoader;
 
 	private MailerCache mailerCache;
@@ -203,12 +195,12 @@ public class EmailProcessor implements ServiceProcessor<EmailServiceRequest, Ema
 	private Maybe<ConnectionCheckResult> checkConnections(@SuppressWarnings("unused") ServiceRequestContext requestContext,
 			CheckConnections request) {
 
-		PersistenceGmSession cortexSession = cortexSessionProvider.get();
 		Set<String> connectorIds = request.getConnectorIds();
 
-		List<RetrieveConnector> retrieveConnectors = (List<RetrieveConnector>) getDeployedConnectors(RetrieveConnector.T, cortexSession,
-				connectorIds);
-		List<SendConnector> sendConnectors = (List<SendConnector>) getDeployedConnectors(SendConnector.T, cortexSession, connectorIds);
+		List<RetrieveConnectorConfiguration> retrieveConnectors = connectorConfigurationProvider
+				.getConnectorConfigurations(RetrieveConnectorConfiguration.T, connectorIds);
+		List<SendConnectorConfiguration> sendConnectors = connectorConfigurationProvider
+				.getConnectorConfigurations(SendConnectorConfiguration.T, connectorIds);
 
 		if (retrieveConnectors.isEmpty() && sendConnectors.isEmpty()) {
 			return Reasons.build(ConfigurationMissing.T).text(
@@ -240,37 +232,7 @@ public class EmailProcessor implements ServiceProcessor<EmailServiceRequest, Ema
 		}
 	}
 
-	private List<? extends EmailConnector> getDeployedConnectors(EntityType<? extends EmailConnector> type, PersistenceGmSession cortexSession,
-			Set<String> externalIds) {
-
-		final EntityQuery query;
-		if (externalIds.isEmpty()) {
-			//@formatter:off
-			query = EntityQueryBuilder.from(type)
-					.where()
-					.property(EmailConnector.deploymentStatus).eq(DeploymentStatus.deployed)
-					.done();
-			//@formatter:on
-		} else {
-			//@formatter:off
-			query = EntityQueryBuilder.from(type)
-					.where()
-						.conjunction()
-							.property(EmailConnector.deploymentStatus).eq(DeploymentStatus.deployed)
-							.property(EmailConnector.externalId).in(externalIds)
-						.close()
-					.done();
-			//@formatter:on			
-		}
-		List<EmailConnector> list = cortexSession.query().entities(query).list();
-
-		if (list == null) {
-			return Collections.emptyList();
-		}
-		return list;
-	}
-
-	private ConnectionCheckResultEntry checkRetrieveConnector(RetrieveConnector connection) {
+	private ConnectionCheckResultEntry checkRetrieveConnector(RetrieveConnectorConfiguration connection) {
 		ConnectionCheckResultEntry entry = ConnectionCheckResultEntry.T.create();
 		entry.setName(connection.getName());
 		entry.setExternalId(connection.getExternalId());
@@ -297,19 +259,19 @@ public class EmailProcessor implements ServiceProcessor<EmailServiceRequest, Ema
 		return entry;
 	}
 
-	private ConnectionCheckResultEntry checkSendConnector(SendConnector connection) {
+	private ConnectionCheckResultEntry checkSendConnector(SendConnectorConfiguration connection) {
 
 		ConnectionCheckResultEntry entry = ConnectionCheckResultEntry.T.create();
 		entry.setName(connection.getName());
 		entry.setExternalId(connection.getExternalId());
 		entry.setType(ConnectionType.SENDER);
 
-		if (!(connection instanceof SmtpConnector)) {
+		if (!(connection instanceof SmtpConnectorConfiguration)) {
 			entry.setSuccess(false);
 			entry.setDetails("Unsupported send connector: " + connection.getExternalId());
 			return entry;
 		}
-		SmtpConnector smtpConnector = (SmtpConnector) connection;
+		SmtpConnectorConfiguration smtpConnector = (SmtpConnectorConfiguration) connection;
 		try {
 			MailerContext mailerContext = mailerCache.getMailer(smtpConnector);
 			Mailer mailer = mailerContext.getMailer();
@@ -361,11 +323,11 @@ public class EmailProcessor implements ServiceProcessor<EmailServiceRequest, Ema
 
 	private <T extends EmailServiceResult> Maybe<T> executeWithMailboxContext(String connectorId, Function<MailboxContext, Maybe<T>> runnable) {
 
-		Maybe<RetrieveConnector> connectorMaybe = getSystemSessionBasedConnector(RetrieveConnector.T, connectorId);
+		Maybe<RetrieveConnectorConfiguration> connectorMaybe = connectorConfigurationProvider.getConnectorConfiguration(RetrieveConnectorConfiguration.T, connectorId);
 		if (!connectorMaybe.isSatisfied()) {
 			return connectorMaybe.whyUnsatisfied().asMaybe();
 		}
-		RetrieveConnector connector = connectorMaybe.get();
+		RetrieveConnectorConfiguration connector = connectorMaybe.get();
 
 		MailboxContext mailboxContext = null;
 		ClassLoader currentClassLoader = Thread.currentThread().getContextClassLoader();
@@ -473,17 +435,17 @@ public class EmailProcessor implements ServiceProcessor<EmailServiceRequest, Ema
 			SentEmail result = SentEmail.T.create();
 
 			// to get the password we need to query the connection again with system session...
-			Maybe<SendConnector> connectorMaybe = getSystemSessionBasedConnector(SendConnector.T, request.getConnectorId());
+			Maybe<SendConnectorConfiguration> connectorMaybe = connectorConfigurationProvider.getConnectorConfiguration(SendConnectorConfiguration.T, request.getConnectorId());
 			if (!connectorMaybe.isSatisfied()) {
 				return connectorMaybe.whyUnsatisfied().asMaybe();
 			}
-			SendConnector emailTransmissionConnectorSystem = connectorMaybe.get();
+			SendConnectorConfiguration emailTransmissionConnectorSystem = connectorMaybe.get();
 
 			String connectorId = emailTransmissionConnectorSystem.getExternalId();
 
 			try {
 
-				if (emailTransmissionConnectorSystem instanceof SmtpConnector emailSmtpConnectorSystem) {
+				if (emailTransmissionConnectorSystem instanceof SmtpConnectorConfiguration emailSmtpConnectorSystem) {
 					final org.simplejavamail.api.email.Email resultingEmail;
 					try {
 						resultingEmail = generateOutgoingMail(email, emailSmtpConnectorSystem);
@@ -494,7 +456,7 @@ public class EmailProcessor implements ServiceProcessor<EmailServiceRequest, Ema
 					String messageId = sendEmail(resultingEmail, emailSmtpConnectorSystem);
 					result.setMessageId(messageId);
 
-				} else if (emailTransmissionConnectorSystem instanceof MsGraphSendConnector msgs) {
+				} else if (emailTransmissionConnectorSystem instanceof MsGraphSendConnectorConfiguration msgs) {
 
 					Maybe<String> messageIdMaybe = sendViaMsGraphApi(email, msgs);
 					if (messageIdMaybe.isUnsatisfied()) {
@@ -519,7 +481,7 @@ public class EmailProcessor implements ServiceProcessor<EmailServiceRequest, Ema
 		}
 	}
 
-	private Maybe<String> sendViaMsGraphApi(Email email, MsGraphSendConnector connector) {
+	private Maybe<String> sendViaMsGraphApi(Email email, MsGraphSendConnectorConfiguration connector) {
 
 		final MsGraphMail resultingEmail;
 		try {
@@ -679,7 +641,7 @@ public class EmailProcessor implements ServiceProcessor<EmailServiceRequest, Ema
 		}
 	}
 
-	private Maybe<String> createAccessToken(HttpClient client, MsGraphSendConnector connector) {
+	private Maybe<String> createAccessToken(HttpClient client, MsGraphSendConnectorConfiguration connector) {
 		String clientId = connector.getClientId();
 		String tenantId = connector.getTenantId();
 		String secret = connector.getSecret();
@@ -736,7 +698,7 @@ public class EmailProcessor implements ServiceProcessor<EmailServiceRequest, Ema
 		return formBodyBuilder.toString();
 	}
 
-	private org.simplejavamail.api.email.Email generateOutgoingMail(Email email, SmtpConnector smtpConnection) {
+	private org.simplejavamail.api.email.Email generateOutgoingMail(Email email, SmtpConnectorConfiguration smtpConnection) {
 
 		boolean sendAsync = smtpConnection.getSendAsync() != null ? smtpConnection.getSendAsync().booleanValue() : false;
 
@@ -808,7 +770,7 @@ public class EmailProcessor implements ServiceProcessor<EmailServiceRequest, Ema
 		}
 	}
 
-	private String sendEmail(final org.simplejavamail.api.email.Email email, SmtpConnector connection) {
+	private String sendEmail(final org.simplejavamail.api.email.Email email, SmtpConnectorConfiguration connection) {
 
 		Thread currentThread = Thread.currentThread();
 		ClassLoader oldClassloader = currentThread.getContextClassLoader();
@@ -843,11 +805,11 @@ public class EmailProcessor implements ServiceProcessor<EmailServiceRequest, Ema
 
 		return executeWithMailboxContext(request.getConnectorId(), mailboxContext -> {
 
-			Maybe<RetrieveConnector> connectorMaybe = getSystemSessionBasedConnector(RetrieveConnector.T, request.getConnectorId());
-			if (!connectorMaybe.isSatisfied()) {
-				return connectorMaybe.whyUnsatisfied().asMaybe();
-			}
-			RetrieveConnector connector = connectorMaybe.get();
+			Maybe<RetrieveConnectorConfiguration> connectorMaybe = connectorConfigurationProvider.getConnectorConfiguration(RetrieveConnectorConfiguration.T, request.getConnectorId());
+			if (!connectorMaybe.isSatisfied())
+				return connectorMaybe.propagateReason();
+
+			RetrieveConnectorConfiguration connector = connectorMaybe.get();
 
 			ReceivedEmails response = ReceivedEmails.T.create();
 
@@ -919,11 +881,11 @@ public class EmailProcessor implements ServiceProcessor<EmailServiceRequest, Ema
 		return searchTerm;
 	}
 
-	private void postProcess(ReceiveEmails request, MailboxContext mailboxContext, List<Message> receivedMessages, RetrieveConnector connector)
+	private void postProcess(ReceiveEmails request, MailboxContext mailboxContext, List<Message> receivedMessages, RetrieveConnectorConfiguration connector)
 			throws MessagingException {
 
 		String protocol = null;
-		if (connector instanceof Pop3Connector) {
+		if (connector instanceof Pop3ConnectorConfiguration) {
 			protocol = "pop3";
 		} else {
 			protocol = "imap";
@@ -1058,46 +1020,6 @@ public class EmailProcessor implements ServiceProcessor<EmailServiceRequest, Ema
 		return result;
 	}
 
-	private <T extends EmailConnector> Maybe<T> getSystemSessionBasedConnector(EntityType<? extends EmailConnector> type, String connectorId) {
-		PersistenceGmSession session = cortexSessionProvider.get();
-
-		final EntityQuery query;
-		if (StringTools.isBlank(connectorId)) {
-			//@formatter:off
-			query = EntityQueryBuilder.from(type)
-					.where()
-						.property(EmailConnector.deploymentStatus).eq(DeploymentStatus.deployed)
-					.done();
-			//@formatter:on
-		} else {
-			//@formatter:off
-			query = EntityQueryBuilder.from(type)
-					.where()
-						.conjunction()
-							.property(EmailConnector.deploymentStatus).eq(DeploymentStatus.deployed)
-							.property(EmailConnector.externalId).eq(connectorId)
-						.close()
-					.done();
-			//@formatter:on
-		}
-		T c = session.query().entities(query).first();
-
-		if (c == null || c.getDeploymentStatus() != DeploymentStatus.deployed) {
-			final String kind;
-			final EntityType<? extends Reason> reasonType;
-			if (type.isAssignableFrom(RetrieveConnector.T)) {
-				kind = "retrieve";
-				reasonType = RetrieveConnectorMissing.T;
-			} else {
-				kind = "send";
-				reasonType = SendConnectorMissing.T;
-			}
-			return Reasons.build(reasonType).text(StringTools.isBlank(connectorId) ? "There exists no deployed " + kind + " connector."
-					: "The " + kind + " connector " + connectorId + " does not exist or is not deployed.").toMaybe();
-		}
-		return Maybe.complete(c);
-
-	}
 
 	// #HELPERS
 
@@ -1259,12 +1181,12 @@ public class EmailProcessor implements ServiceProcessor<EmailServiceRequest, Ema
 		return Maybe.incomplete(partial, reason);
 	}
 
-	@Configurable
 	@Required
-	public void setCortexSessionProvider(Supplier<? extends PersistenceGmSession> cortexSessionProvider) {
-		this.cortexSessionProvider = cortexSessionProvider;
+	public void setConnectorConfigurationProvider(ConnectorConfigurationProvider connectorConfigurationProvider) {
+		this.connectorConfigurationProvider = connectorConfigurationProvider;
 	}
-
+	
+	
 	@Configurable
 	@Required
 	public void setModuleClassLoader(ClassLoader moduleClassLoader) {

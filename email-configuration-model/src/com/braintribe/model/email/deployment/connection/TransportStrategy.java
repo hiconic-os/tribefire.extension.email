@@ -15,16 +15,20 @@
 // ============================================================================
 package com.braintribe.model.email.deployment.connection;
 
-import com.braintribe.model.generic.annotation.SelectiveInformation;
-import com.braintribe.model.generic.reflection.EntityType;
-import com.braintribe.model.generic.reflection.EntityTypes;
+import com.braintribe.model.generic.base.EnumBase;
+import com.braintribe.model.generic.reflection.EnumType;
+import com.braintribe.model.generic.reflection.EnumTypes;
 
-/**
- *
- */
-@SelectiveInformation("Yahoo SMTP Connector")
-public interface YahooSmtpConnector extends YahooSmtpConnectorConfiguration, SmtpConnector {
+public enum TransportStrategy implements EnumBase<TransportStrategy> {
 
-	EntityType<YahooSmtpConnector> T = EntityTypes.T(YahooSmtpConnector.class);
+	SMTP,
+	SMTP_TLS,
+	SMTPS;
 
+	public static final EnumType<TransportStrategy> T = EnumTypes.T(TransportStrategy.class);
+
+	@Override
+	public EnumType<TransportStrategy> type() {
+		return T;
+	}
 }

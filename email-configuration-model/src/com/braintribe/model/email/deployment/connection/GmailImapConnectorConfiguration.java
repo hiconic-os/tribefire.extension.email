@@ -15,16 +15,28 @@
 // ============================================================================
 package com.braintribe.model.email.deployment.connection;
 
+import com.braintribe.model.generic.annotation.Initializer;
 import com.braintribe.model.generic.annotation.SelectiveInformation;
+import com.braintribe.model.generic.annotation.meta.Mandatory;
+import com.braintribe.model.generic.annotation.meta.Unmodifiable;
 import com.braintribe.model.generic.reflection.EntityType;
 import com.braintribe.model.generic.reflection.EntityTypes;
 
-/**
- *
- */
-@SelectiveInformation("Yahoo SMTP Connector")
-public interface YahooSmtpConnector extends YahooSmtpConnectorConfiguration, SmtpConnector {
+@SelectiveInformation("Gmail IMAP Connector")
+public interface GmailImapConnectorConfiguration extends ImapConnectorConfiguration {
 
-	EntityType<YahooSmtpConnector> T = EntityTypes.T(YahooSmtpConnector.class);
+	final EntityType<GmailImapConnectorConfiguration> T = EntityTypes.T(GmailImapConnectorConfiguration.class);
+
+	@Mandatory
+	@Initializer("'imap.gmail.com'")
+	@Unmodifiable
+	@Override
+	String getHost();
+
+	@Mandatory
+	@Initializer("993")
+	@Unmodifiable
+	@Override
+	Integer getPort();
 
 }

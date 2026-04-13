@@ -15,10 +15,7 @@
 // ============================================================================
 package com.braintribe.model.email.deployment.connection;
 
-import com.braintribe.model.email.data.Sender;
 import com.braintribe.model.generic.annotation.Abstract;
-import com.braintribe.model.generic.annotation.meta.Description;
-import com.braintribe.model.generic.annotation.meta.Name;
 import com.braintribe.model.generic.reflection.EntityType;
 import com.braintribe.model.generic.reflection.EntityTypes;
 
@@ -26,12 +23,8 @@ import com.braintribe.model.generic.reflection.EntityTypes;
  *
  */
 @Abstract
-public interface SendConnector extends EmailConnector {
+public interface SendConnector extends SendConnectorConfiguration, EmailConnector {
 
-	final EntityType<SendConnector> T = EntityTypes.T(SendConnector.class);
+	EntityType<SendConnector> T = EntityTypes.T(SendConnector.class);
 
-	@Name("Default From")
-	@Description("The mail address that should be used as From by default. If not set, either the user of the loginUser will be used.")
-	Sender getDefaultFrom();
-	void setDefaultFrom(Sender defaultFrom);
 }

@@ -15,7 +15,10 @@
 // ============================================================================
 package com.braintribe.model.email.deployment.connection;
 
+import com.braintribe.model.generic.annotation.Initializer;
 import com.braintribe.model.generic.annotation.SelectiveInformation;
+import com.braintribe.model.generic.annotation.meta.Mandatory;
+import com.braintribe.model.generic.annotation.meta.Unmodifiable;
 import com.braintribe.model.generic.reflection.EntityType;
 import com.braintribe.model.generic.reflection.EntityTypes;
 
@@ -23,8 +26,32 @@ import com.braintribe.model.generic.reflection.EntityTypes;
  *
  */
 @SelectiveInformation("Yahoo SMTP Connector")
-public interface YahooSmtpConnector extends YahooSmtpConnectorConfiguration, SmtpConnector {
+public interface YahooSmtpConnectorConfiguration extends SmtpConnectorConfiguration {
 
-	EntityType<YahooSmtpConnector> T = EntityTypes.T(YahooSmtpConnector.class);
+	final EntityType<YahooSmtpConnectorConfiguration> T = EntityTypes.T(YahooSmtpConnectorConfiguration.class);
+
+	@Mandatory
+	@Initializer("'smtp.mail.yahoo.com'")
+	@Unmodifiable
+	@Override
+	String getSmtpHostName();
+	@Override
+	void setSmtpHostName(String smtpHostName);
+
+	@Mandatory
+	@Initializer("587")
+	@Unmodifiable
+	@Override
+	int getSmtpPort();
+	@Override
+	void setSmtpPort(int port);
+
+	@Mandatory
+	@Initializer("enum(com.braintribe.model.email.deployment.connection.TransportStrategy,SMTP_TLS)")
+	@Unmodifiable
+	@Override
+	TransportStrategy getTransportStrategy();
+	@Override
+	void setTransportStrategy(TransportStrategy protocol);
 
 }

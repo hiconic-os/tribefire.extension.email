@@ -19,12 +19,9 @@ import com.braintribe.model.generic.annotation.SelectiveInformation;
 import com.braintribe.model.generic.reflection.EntityType;
 import com.braintribe.model.generic.reflection.EntityTypes;
 
-/**
- *
- */
-@SelectiveInformation("Yahoo SMTP Connector")
-public interface YahooSmtpConnector extends YahooSmtpConnectorConfiguration, SmtpConnector {
+@SelectiveInformation("POP3 Connector ${host}")
+public interface Pop3ConnectorConfiguration extends RetrieveConnectorConfiguration {
 
-	EntityType<YahooSmtpConnector> T = EntityTypes.T(YahooSmtpConnector.class);
+	final EntityType<Pop3ConnectorConfiguration> T = EntityTypes.T(Pop3ConnectorConfiguration.class);
 
 }

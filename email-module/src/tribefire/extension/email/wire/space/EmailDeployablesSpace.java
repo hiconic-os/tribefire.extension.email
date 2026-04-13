@@ -24,6 +24,7 @@ import com.braintribe.execution.queue.LimitedQueue;
 import com.braintribe.model.processing.deployment.api.ExpertContext;
 import com.braintribe.model.processing.email.EmailProcessor;
 import com.braintribe.model.processing.email.HealthCheckProcessor;
+import com.braintribe.model.processing.email.api.ConnectorConfigurationProvider;
 import com.braintribe.model.processing.email.cache.MailerCache;
 import com.braintribe.model.processing.email.connection.ImapConnectorImpl;
 import com.braintribe.model.processing.email.connection.MsGraphSendConnectorImpl;
@@ -33,6 +34,7 @@ import com.braintribe.wire.api.annotation.Import;
 import com.braintribe.wire.api.annotation.Managed;
 import com.braintribe.wire.api.space.WireSpace;
 
+import tribefire.extension.email.processing.CortexBasedConnectorConfigurationProvider;
 import tribefire.module.wire.contract.ModuleReflectionContract;
 import tribefire.module.wire.contract.ResourceProcessingContract;
 import tribefire.module.wire.contract.SystemUserRelatedContract;
@@ -109,11 +111,19 @@ public class EmailDeployablesSpace implements WireSpace {
 	public EmailProcessor emailServiceProcessor() {
 		EmailProcessor bean = new EmailProcessor();
 
-		bean.setCortexSessionProvider(tfPlatform.systemUserRelated().cortexSessionSupplier());
+		bean.setConnectorConfigurationProvider(connectorConfigurationProvider());
 		bean.setModuleClassLoader(reflection.moduleClassLoader());
 		bean.setMailerCache(mailerCache());
 		bean.setPipeStreamFactory(resourceProcessing.streamPipeFactory());
 		bean.setHealthCheckExecutor(healthCheckExecutor());
+
+		return bean;
+	}
+
+	@Managed
+	private CortexBasedConnectorConfigurationProvider connectorConfigurationProvider() {
+		CortexBasedConnectorConfigurationProvider bean = new CortexBasedConnectorConfigurationProvider();
+		bean.setCortexSessionProvider(tfPlatform.systemUserRelated().cortexSessionSupplier());
 
 		return bean;
 	}

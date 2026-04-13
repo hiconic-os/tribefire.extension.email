@@ -1,6 +1,4 @@
 // ============================================================================
-// Copyright BRAINTRIBE TECHNOLOGY GMBH, Austria, 2002-2022
-//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -15,20 +13,24 @@
 // ============================================================================
 package com.braintribe.model.email.deployment.connection;
 
-import com.braintribe.model.generic.base.EnumBase;
-import com.braintribe.model.generic.reflection.EnumType;
-import com.braintribe.model.generic.reflection.EnumTypes;
+import com.braintribe.model.generic.GenericEntity;
+import com.braintribe.model.generic.annotation.Abstract;
+import com.braintribe.model.generic.reflection.EntityType;
+import com.braintribe.model.generic.reflection.EntityTypes;
 
-public enum TransportStrategy implements EnumBase {
+/**
+ *
+ */
+@Abstract
+public interface EmailConnectorConfiguration extends GenericEntity {
 
-	SMTP,
-	SMTP_TLS,
-	SMTPS;
+	EntityType<EmailConnectorConfiguration> T = EntityTypes.T(EmailConnectorConfiguration.class);
 
-	public static final EnumType T = EnumTypes.T(TransportStrategy.class);
+	// For backwards compatibility with deployables, because the implementation uses it internally 
+	String getExternalId();
+	void setExternalId(String externalId);
 
-	@Override
-	public EnumType type() {
-		return T;
-	}
+	String getName();
+	void setName(String name);
+	
 }

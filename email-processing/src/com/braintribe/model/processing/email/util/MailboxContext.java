@@ -17,8 +17,8 @@ package com.braintribe.model.processing.email.util;
 
 import java.util.Properties;
 
-import com.braintribe.model.email.deployment.connection.Pop3Connector;
-import com.braintribe.model.email.deployment.connection.RetrieveConnector;
+import com.braintribe.model.email.deployment.connection.Pop3ConnectorConfiguration;
+import com.braintribe.model.email.deployment.connection.RetrieveConnectorConfiguration;
 
 import jakarta.mail.Authenticator;
 import jakarta.mail.Folder;
@@ -54,8 +54,8 @@ public class MailboxContext {
 		this.password = password;
 	}
 
-	public MailboxContext(RetrieveConnector connection, String folder) {
-		if (connection instanceof Pop3Connector) {
+	public MailboxContext(RetrieveConnectorConfiguration connection, String folder) {
+		if (connection instanceof Pop3ConnectorConfiguration) {
 			this.protocol = "pop3";
 		} else {
 			this.protocol = "imap";
@@ -69,7 +69,7 @@ public class MailboxContext {
 		this.password = connection.getPassword();
 	}
 
-	private Properties createServerProperties(RetrieveConnector connector, String proto, boolean isDebug) {
+	private Properties createServerProperties(RetrieveConnectorConfiguration connector, String proto, boolean isDebug) {
 		String cHost = connector.getHost();
 		String cPort = Integer.toString(connector.getPort());
 

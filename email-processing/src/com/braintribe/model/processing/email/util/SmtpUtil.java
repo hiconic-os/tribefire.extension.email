@@ -23,7 +23,7 @@ import org.simplejavamail.api.email.EmailPopulatingBuilder;
 import org.simplejavamail.api.email.Recipient;
 
 import com.braintribe.model.email.data.Sender;
-import com.braintribe.model.email.deployment.connection.SmtpConnector;
+import com.braintribe.model.email.deployment.connection.SmtpConnectorConfiguration;
 import com.braintribe.utils.StringTools;
 
 import jakarta.mail.Message.RecipientType;
@@ -56,7 +56,7 @@ public class SmtpUtil {
 	}
 
 	public static void enrichRecipients(com.braintribe.model.email.data.Email email, EmailPopulatingBuilder resultingEmail,
-			SmtpConnector smtpConnection) {
+			SmtpConnectorConfiguration smtpConnection) {
 		List<Recipient> toList = new ArrayList<>();
 		email.getToList().forEach(r -> toList.add(transformRecipient(r, RecipientType.TO)));
 		resultingEmail.to(toList);
@@ -85,7 +85,7 @@ public class SmtpUtil {
 
 	}
 
-	private static void setFrom(com.braintribe.model.email.data.Email email, EmailPopulatingBuilder resultingEmail, SmtpConnector smtpConnection) {
+	private static void setFrom(com.braintribe.model.email.data.Email email, EmailPopulatingBuilder resultingEmail, SmtpConnectorConfiguration smtpConnection) {
 		if (!setFromDirectly(email, resultingEmail)) {
 			Sender defaultFrom = smtpConnection.getDefaultFrom();
 			if (defaultFrom != null) {

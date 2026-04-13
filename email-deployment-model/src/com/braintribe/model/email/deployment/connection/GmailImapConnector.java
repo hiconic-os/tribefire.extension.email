@@ -15,28 +15,13 @@
 // ============================================================================
 package com.braintribe.model.email.deployment.connection;
 
-import com.braintribe.model.generic.annotation.Initializer;
 import com.braintribe.model.generic.annotation.SelectiveInformation;
-import com.braintribe.model.generic.annotation.meta.Mandatory;
-import com.braintribe.model.generic.annotation.meta.Unmodifiable;
 import com.braintribe.model.generic.reflection.EntityType;
 import com.braintribe.model.generic.reflection.EntityTypes;
 
 @SelectiveInformation("Gmail IMAP Connector")
-public interface GmailImapConnector extends ImapConnector {
+public interface GmailImapConnector extends GmailImapConnectorConfiguration, ImapConnector {
 
-	final EntityType<GmailImapConnector> T = EntityTypes.T(GmailImapConnector.class);
-
-	@Mandatory
-	@Initializer("'imap.gmail.com'")
-	@Unmodifiable
-	@Override
-	String getHost();
-
-	@Mandatory
-	@Initializer("993")
-	@Unmodifiable
-	@Override
-	Integer getPort();
+	EntityType<GmailImapConnector> T = EntityTypes.T(GmailImapConnector.class);
 
 }
