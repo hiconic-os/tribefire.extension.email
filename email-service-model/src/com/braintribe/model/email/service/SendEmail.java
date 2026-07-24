@@ -33,6 +33,7 @@ import com.braintribe.model.service.api.ServiceRequest;
 @UnsatisfiedBy(PrepareOutgoingMailError.class)
 @UnsatisfiedBy(MailServerError.class)
 @UnsatisfiedBy(UnsupportedOperation.class)
+@hiconic.rx.webapi.model.annotation.RequestMapping(path = "v1/send", method = hiconic.rx.webapi.model.meta.HttpRequestMethod.POST, section = "Email", responseMimeType = "application/json", hideSerializedRequest = true, announceAsMultipart = true, depth = "reachable")
 public interface SendEmail extends EmailServiceRequest {
 
 	EntityType<SendEmail> T = EntityTypes.T(SendEmail.class);

@@ -15,6 +15,8 @@ package com.braintribe.model.email.deployment.connection;
 
 import com.braintribe.model.generic.GenericEntity;
 import com.braintribe.model.generic.annotation.Abstract;
+import com.braintribe.model.generic.annotation.Initializer;
+import com.braintribe.model.generic.annotation.meta.Mandatory;
 import com.braintribe.model.generic.reflection.EntityType;
 import com.braintribe.model.generic.reflection.EntityTypes;
 
@@ -27,10 +29,16 @@ public interface EmailConnectorConfiguration extends GenericEntity {
 	EntityType<EmailConnectorConfiguration> T = EntityTypes.T(EmailConnectorConfiguration.class);
 
 	// For backwards compatibility with deployables, because the implementation uses it internally 
+	@Mandatory
 	String getExternalId();
 	void setExternalId(String externalId);
 
 	String getName();
 	void setName(String name);
+
+	/** Whether this connector participates in lookup and health checks. */
+	@Initializer("true")
+	boolean getEnabled();
+	void setEnabled(boolean enabled);
 	
 }

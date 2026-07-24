@@ -67,11 +67,6 @@ limitations under the License.
             <version>${V.com.braintribe.gm}</version>
         </dependency>
         <dependency>
-            <groupId>tribefire.cortex</groupId>
-            <artifactId>check-api</artifactId>
-            <version>${V.tribefire.cortex}</version>
-        </dependency>
-        <dependency>
             <groupId>tribefire.extension.email</groupId>
             <artifactId>email-service-model</artifactId>
             <version>${V.tribefire.extension.email}</version>

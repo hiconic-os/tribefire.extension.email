@@ -34,6 +34,7 @@ import com.braintribe.model.service.api.ServiceRequest;
 @UnsatisfiedBy(MailServerError.class)
 @UnsatisfiedBy(PostProcessingError.class)
 @UnsatisfiedBy(MailServerConnectionError.class)
+@hiconic.rx.webapi.model.annotation.RequestMapping(path = "v1/receive", method = hiconic.rx.webapi.model.meta.HttpRequestMethod.GET, section = "Email", responseMimeType = "application/json", hideSerializedRequest = true, depth = "reachable")
 public interface ReceiveEmails extends EmailServiceRequest {
 
 	EntityType<ReceiveEmails> T = EntityTypes.T(ReceiveEmails.class);
