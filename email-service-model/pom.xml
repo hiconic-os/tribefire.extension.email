@@ -17,7 +17,7 @@ limitations under the License.
         <version>[6.0,6.1)</version>
     </parent>
     <artifactId>email-service-model</artifactId>
-    <version>6.0.3</version>
+    <version>6.0.4</version>
     <properties>
         <archetype>model</archetype>
     </properties>
