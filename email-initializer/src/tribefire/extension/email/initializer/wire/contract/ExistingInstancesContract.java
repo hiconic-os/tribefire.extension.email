@@ -40,6 +40,14 @@ public interface ExistingInstancesContract extends WireSpace {
 	@GlobalId("module://" + GROUP_ID + ":email-module")
 	com.braintribe.model.deployment.Module module();
 
+	// Because we add email requests to cortex, we need to add the meta-data model to cortex data model
+
+	@GlobalId("model:tribefire.cortex:tribefire-cortex-model")
+	GmMetaModel cortexDataModel();
+
+	@GlobalId("model:hiconic.platform.reflex:web-api-mapping-meta-data-model")
+	GmMetaModel webApiMdModel();
+
 	// ***************************************************************************************************
 	// DDRA
 	// ***************************************************************************************************

@@ -23,6 +23,7 @@ import com.braintribe.gm.model.reason.essential.NotFound;
 import com.braintribe.model.ddra.DdraMapping;
 import com.braintribe.model.email.service.EmailServiceRequest;
 import com.braintribe.model.email.service.reason.ConfigurationMissing;
+import com.braintribe.model.meta.GmMetaModel;
 import com.braintribe.model.processing.meta.editor.ModelMetaDataEditor;
 import com.braintribe.model.processing.session.api.collaboration.PersistenceInitializationContext;
 import com.braintribe.wire.api.module.WireTerminalModule;
@@ -59,6 +60,7 @@ public class EmailInitializer extends AbstractInitializer<EmailInitializerMainCo
 
 		configureMetaData(initializerMainContract);
 
+		addWepApiMdModelToCortexDataModel(initializerContext);
 	}
 
 	private void configureMetaData(EmailInitializerMainContract initializerMainContract) {
@@ -73,4 +75,14 @@ public class EmailInitializer extends AbstractInitializer<EmailInitializerMainCo
 		editor.onEntityType(InternalError.T).addMetaData(initializer.httpStatus500Md(), initializer.logReasonTrace());
 		editor.onEntityType(ConfigurationMissing.T).addMetaData(initializer.httpStatus501Md(), initializer.logReasonTrace());
 	}
+
+	private void addWepApiMdModelToCortexDataModel(WiredInitializerContext<EmailInitializerMainContract> context) {
+		ExistingInstancesContract existingInstances = context.contract().existingInstances();
+
+		GmMetaModel cortexDataModel = existingInstances.cortexDataModel();
+		GmMetaModel tmpWebApiMdModel = existingInstances.webApiMdModel();
+
+		cortexDataModel.getDependencies().add(tmpWebApiMdModel);
+	}
+
 }
