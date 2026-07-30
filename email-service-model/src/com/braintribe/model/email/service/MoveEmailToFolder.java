@@ -15,6 +15,8 @@
 // ============================================================================
 package com.braintribe.model.email.service;
 
+import hiconic.rx.webapi.model.meta.BooleanOverride;
+
 import com.braintribe.model.email.service.reason.MailNotFound;
 import com.braintribe.model.email.service.reason.MailServerConnectionError;
 import com.braintribe.model.email.service.reason.MoveMailFailed;
@@ -32,7 +34,7 @@ import com.braintribe.model.service.api.ServiceRequest;
 @UnsatisfiedBy(MailServerConnectionError.class)
 @UnsatisfiedBy(MailNotFound.class)
 @UnsatisfiedBy(MoveMailFailed.class)
-@hiconic.rx.webapi.model.annotation.RequestMapping(path = "v1/move", method = hiconic.rx.webapi.model.meta.HttpRequestMethod.POST, section = "Email", responseMimeType = "application/json", hideSerializedRequest = true, announceAsMultipart = true, depth = "reachable")
+@hiconic.rx.webapi.model.annotation.RequestMapping(path = "v1/move", method = hiconic.rx.webapi.model.meta.HttpRequestMethod.POST, section = "Email", responseMimeType = "application/json", hideSerializedRequest = BooleanOverride.ENABLED, announceAsMultipart = BooleanOverride.ENABLED, depth = "reachable")
 public interface MoveEmailToFolder extends EmailServiceRequest {
 
 	EntityType<MoveEmailToFolder> T = EntityTypes.T(MoveEmailToFolder.class);

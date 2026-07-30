@@ -15,6 +15,8 @@
 // ============================================================================
 package com.braintribe.model.email.service;
 
+import hiconic.rx.webapi.model.meta.BooleanOverride;
+
 import java.util.Set;
 
 import com.braintribe.model.email.service.reason.ConfigurationMissing;
@@ -28,7 +30,7 @@ import com.braintribe.model.generic.reflection.EntityTypes;
 import com.braintribe.model.service.api.ServiceRequest;
 
 @UnsatisfiedBy(ConfigurationMissing.class)
-@hiconic.rx.webapi.model.annotation.RequestMapping(path = "v1/check", method = hiconic.rx.webapi.model.meta.HttpRequestMethod.GET, section = "Email", responseMimeType = "application/json", hideSerializedRequest = true, depth = "reachable")
+@hiconic.rx.webapi.model.annotation.RequestMapping(path = "v1/check", method = hiconic.rx.webapi.model.meta.HttpRequestMethod.GET, section = "Email", responseMimeType = "application/json", hideSerializedRequest = BooleanOverride.ENABLED, depth = "reachable")
 public interface CheckConnections extends EmailServiceRequest {
 
 	EntityType<CheckConnections> T = EntityTypes.T(CheckConnections.class);
