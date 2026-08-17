@@ -15,7 +15,9 @@
 // ============================================================================
 package com.braintribe.model.email.service;
 
+import hiconic.rx.webapi.model.annotation.RequestMapping;
 import hiconic.rx.webapi.model.meta.BooleanOverride;
+import hiconic.rx.webapi.model.meta.HttpRequestMethod;
 
 import com.braintribe.gm.model.reason.essential.UnsupportedOperation;
 import com.braintribe.model.email.data.Email;
@@ -35,7 +37,7 @@ import com.braintribe.model.service.api.ServiceRequest;
 @UnsatisfiedBy(PrepareOutgoingMailError.class)
 @UnsatisfiedBy(MailServerError.class)
 @UnsatisfiedBy(UnsupportedOperation.class)
-@hiconic.rx.webapi.model.annotation.RequestMapping(path = "v1/send", method = hiconic.rx.webapi.model.meta.HttpRequestMethod.POST, section = "Email", responseMimeType = "application/json", hideSerializedRequest = BooleanOverride.ENABLED, announceAsMultipart = BooleanOverride.ENABLED, depth = "reachable")
+@RequestMapping(path = "v1/send", method = HttpRequestMethod.POST, section = "Email", responseMimeType = "application/json", hideSerializedRequest = BooleanOverride.ENABLED, announceAsMultipart = BooleanOverride.ENABLED, depth = "reachable")
 public interface SendEmail extends EmailServiceRequest {
 
 	EntityType<SendEmail> T = EntityTypes.T(SendEmail.class);

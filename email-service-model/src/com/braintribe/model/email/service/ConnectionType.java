@@ -20,17 +20,17 @@ import com.braintribe.model.generic.base.EnumBase;
 import com.braintribe.model.generic.reflection.EnumType;
 import com.braintribe.model.generic.reflection.EnumTypes;
 
-public enum ConnectionType implements EnumBase {
+public enum ConnectionType implements EnumBase<ConnectionType> {
 
 	@Name("Sender")
 	SENDER,
 	@Name("Receiver")
 	RECEIVER;
 
-	EnumType T = EnumTypes.T(ConnectionType.class);
+	EnumType<ConnectionType> T = EnumTypes.T(ConnectionType.class);
 
 	@Override
-	public EnumType type() {
+	public EnumType<ConnectionType> type() {
 		return T;
 	}
 

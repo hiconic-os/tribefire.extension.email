@@ -15,7 +15,9 @@
 // ============================================================================
 package com.braintribe.model.email.service;
 
+import hiconic.rx.webapi.model.annotation.RequestMapping;
 import hiconic.rx.webapi.model.meta.BooleanOverride;
+import hiconic.rx.webapi.model.meta.HttpRequestMethod;
 
 import com.braintribe.model.email.service.reason.DeleteMailFailed;
 import com.braintribe.model.email.service.reason.MailNotFound;
@@ -34,7 +36,7 @@ import com.braintribe.model.service.api.ServiceRequest;
 @UnsatisfiedBy(MailServerConnectionError.class)
 @UnsatisfiedBy(MailNotFound.class)
 @UnsatisfiedBy(DeleteMailFailed.class)
-@hiconic.rx.webapi.model.annotation.RequestMapping(path = "v1/delete", method = hiconic.rx.webapi.model.meta.HttpRequestMethod.DELETE, section = "Email", responseMimeType = "application/json", hideSerializedRequest = BooleanOverride.ENABLED, depth = "reachable")
+@RequestMapping(path = "v1/delete", method = HttpRequestMethod.DELETE, section = "Email", responseMimeType = "application/json", hideSerializedRequest = BooleanOverride.ENABLED, depth = "reachable")
 public interface DeleteEmail extends EmailServiceRequest {
 
 	EntityType<DeleteEmail> T = EntityTypes.T(DeleteEmail.class);

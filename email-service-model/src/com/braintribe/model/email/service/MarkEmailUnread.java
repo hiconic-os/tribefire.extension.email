@@ -15,7 +15,9 @@
 // ============================================================================
 package com.braintribe.model.email.service;
 
+import hiconic.rx.webapi.model.annotation.RequestMapping;
 import hiconic.rx.webapi.model.meta.BooleanOverride;
+import hiconic.rx.webapi.model.meta.HttpRequestMethod;
 
 import com.braintribe.model.email.service.reason.MailNotFound;
 import com.braintribe.model.email.service.reason.MailServerConnectionError;
@@ -34,7 +36,7 @@ import com.braintribe.model.service.api.ServiceRequest;
 @UnsatisfiedBy(MailServerConnectionError.class)
 @UnsatisfiedBy(MailNotFound.class)
 @UnsatisfiedBy(SetFlagFailed.class)
-@hiconic.rx.webapi.model.annotation.RequestMapping(path = "v1/mark-unread", method = hiconic.rx.webapi.model.meta.HttpRequestMethod.POST, section = "Email", responseMimeType = "application/json", hideSerializedRequest = BooleanOverride.ENABLED, announceAsMultipart = BooleanOverride.ENABLED, depth = "reachable")
+@RequestMapping(path = "v1/mark-unread", method = HttpRequestMethod.POST, section = "Email", responseMimeType = "application/json", hideSerializedRequest = BooleanOverride.ENABLED, announceAsMultipart = BooleanOverride.ENABLED, depth = "reachable")
 public interface MarkEmailUnread extends EmailServiceRequest {
 
 	EntityType<MarkEmailUnread> T = EntityTypes.T(MarkEmailUnread.class);

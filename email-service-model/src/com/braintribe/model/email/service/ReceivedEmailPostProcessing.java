@@ -22,16 +22,16 @@ import com.braintribe.model.generic.reflection.EnumTypes;
 /**
  * Possible ways to deal with a retrieved message: mark as read, delete or do nothing.
  */
-public enum ReceivedEmailPostProcessing implements EnumBase {
+public enum ReceivedEmailPostProcessing implements EnumBase<ReceivedEmailPostProcessing> {
 
 	MARK_READ,
 	DELETE,
 	NOP;
 
-	public static final EnumType T = EnumTypes.T(ReceivedEmailPostProcessing.class);
+	public static final EnumType<ReceivedEmailPostProcessing> T = EnumTypes.T(ReceivedEmailPostProcessing.class);
 
 	@Override
-	public EnumType type() {
+	public EnumType<ReceivedEmailPostProcessing> type() {
 		return T;
 	}
 

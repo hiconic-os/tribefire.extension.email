@@ -25,7 +25,7 @@ public interface SentEmail extends EmailServiceResult {
 	EntityType<SentEmail> T = EntityTypes.T(SentEmail.class);
 
 	@Name("Message ID")
-	@Description("The ID of the message as assigned by the server. It is nit guaranteed that this will be set.")
+	@Description("The ID of the message as assigned by the server. It is not guaranteed that this will be set.")
 	String getMessageId();
 	void setMessageId(String messageId);
 }
