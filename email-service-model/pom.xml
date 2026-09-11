@@ -57,7 +57,7 @@ limitations under the License.
         </dependency>
         <dependency>
             <groupId>hiconic.platform.reflex</groupId>
-            <artifactId>web-api-mapping-meta-data-model</artifactId>
+            <artifactId>web-api-mapping-meta-data-annotations</artifactId>
             <version>${V.hiconic.platform.reflex}</version>
             <?group functional?>
         </dependency>
